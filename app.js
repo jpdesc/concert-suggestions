@@ -7,6 +7,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 
 let topArtists = {};
+const BANDSINTOWN_BASE_ENDPOINT = "rest.bandsintown.com";
 
 app.get("/", async function (req, res) {
   const response = await getTopArtists();
@@ -14,7 +15,9 @@ app.get("/", async function (req, res) {
   for (let idx in items) {
     let obj = items[idx];
     //   console.log(obj["name"]);
+
     topArtists[idx] = obj["name"];
+    let bandsintown;
   }
   res.send(topArtists);
 
