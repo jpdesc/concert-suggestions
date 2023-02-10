@@ -1,3 +1,19 @@
 <%- include("header") -%> <% for (let i = 0; i < topArtistsArray.length; i++){%>
+<form action="/" method="post">
+  <input
+    type="number"
+    name="quantity"
+    placeholder="1-50"
+    min="1"
+    max="50"
+    autocomplete="off"
+  />
+  <select>
+    <option value="short_term">Short Term</option>
+    <option value="medium_term">Medium Term</option>
+    <option value="long_term">Long Term</option>
+  </select>
+  <button type="submit" name="query">Add</button>
+</form>
 <p><%= topArtistsArray[i] %></p>
 <% } %> <%- include("footer") -%>
