@@ -36,3 +36,12 @@ export const getTopArtists = async () => {
     },
   });
 };
+
+export const getTopArtistsArray = (topArtistsObj) => {
+  let topArtistsArray = [];
+  for (let i = 0; i < 50; i++) {
+    topArtistsArray.push(topArtistsObj[i]);
+  }
+  console.log(topArtistsArray);
+  return topArtistsArray;
+};

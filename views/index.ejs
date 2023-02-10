@@ -1,1 +1,3 @@
-<%- include("header") -%> <%- include("footer") -%>
+<%- include("header") -%> <% for (let i = 0; i < topArtistsArray.length; i++){%>
+<p><%= topArtistsArray[i] %></p>
+<% } %> <%- include("footer") -%>

@@ -1,15 +1,14 @@
 import express from "express";
 import bodyParser from "body-parser";
 import https from "https";
-import { getTopArtists } from "./helpers.js";
+import { getTopArtists, getTopArtistsArray } from "./helpers.js";
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-let topArtists = {};
-const BANDSINTOWN_BASE_ENDPOINT = "rest.bandsintown.com";
+const topArtists = {};
 
 app.get("/", async function (req, res) {
   const response = await getTopArtists();
@@ -21,7 +20,9 @@ app.get("/", async function (req, res) {
     topArtists[idx] = obj["name"];
     let bandsintown;
   }
-  res.send(topArtists);
+  let topArtistsArray = getTopArtistsArray(topArtists);
+
+  res.render("index", { topArtistsArray: topArtistsArray });
 
   //   const artists = items.slice(0, 10).map((track) => ({
   //     artist: track.artists.map((_artist) => _artist.name).join(", "),
