@@ -4,7 +4,9 @@ import https from "https";
 import { getTopArtists } from "./helpers.js";
 
 const app = express();
+app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
 let topArtists = {};
 const BANDSINTOWN_BASE_ENDPOINT = "rest.bandsintown.com";
