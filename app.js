@@ -1,5 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import https from "https";
 import { getTopArtists, getTopArtistsArray } from "./helpers.js";
 
@@ -9,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 const topArtists = {};
-const topArtistsArray = [];
+var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
   console.log("inside get function");
@@ -17,20 +18,17 @@ app.get("/", async function (req, res) {
 });
 
 app.post("/", async function (req, res) {
-  console.log(req.body);
   let time_range = req.body.range;
   let limit = req.body.quantity;
   const response = await getTopArtists(time_range, limit);
-  console.log(response);
   const { items } = await response.json();
   for (let idx in items) {
     let artistObj = items[idx];
     let artist = artistObj["name"];
-    console.log(artist);
-    //   console.log(obj["name"]);
     topArtists[idx] = artist;
   }
-  let topArtistsArray = getTopArtistsArray(topArtists);
+  console.log(getTopArtistsArray(topArtists));
+  var topArtistsArray = getTopArtistsArray(topArtists);
   res.redirect("/");
 });
 

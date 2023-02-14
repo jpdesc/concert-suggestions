@@ -34,10 +34,8 @@ const getAccessToken = async () => {
 
 export const getTopArtists = async (time_range, limit) => {
   const { access_token } = await getAccessToken();
-  time_range = time_range !== undefined ? `&time_range=${time_range}` : "";
-  limit = limit !== undefined ? `&limit=${limit}` : "";
-  console.log(time_range);
-  console.log(limit);
+  time_range = `&time_range=${time_range}`;
+  limit = limit ? `&limit=${limit}` : "";
   const TOP_ARTISTS_ENDPOINT = TOP_ARTISTS_BASE_ENDPOINT + time_range + limit;
   console.log(TOP_ARTISTS_ENDPOINT);
   return fetch(TOP_ARTISTS_ENDPOINT, {
@@ -53,7 +51,7 @@ export const getTopArtistsArray = (topArtistsObj) => {
     console.log("artist number " + i);
     topArtistsArray.push(topArtistsObj[i]);
   }
-  console.log(topArtistsArray);
+  //   console.log(topArtistsArray);
   return topArtistsArray;
 };
 
