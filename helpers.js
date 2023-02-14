@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 import querystring from "querystring";
+// import topArtistsArray from "app.js";
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -34,8 +35,14 @@ const getAccessToken = async () => {
 
 export const getTopArtists = async (time_range, limit) => {
   const { access_token } = await getAccessToken();
-  time_range = `&time_range=${time_range}`;
-  limit = limit ? `&limit=${limit}` : "";
+  console.log(access_token);
+  time_range = `time_range=${time_range}`;
+  limit =
+    limit && !time_range
+      ? `limit=${limit}`
+      : limit && time_range
+      ? `&limit=${limit}`
+      : "";
   const TOP_ARTISTS_ENDPOINT = TOP_ARTISTS_BASE_ENDPOINT + time_range + limit;
   console.log(TOP_ARTISTS_ENDPOINT);
   return fetch(TOP_ARTISTS_ENDPOINT, {
@@ -48,10 +55,11 @@ export const getTopArtists = async (time_range, limit) => {
 export const getTopArtistsArray = (topArtistsObj) => {
   let topArtistsArray = [];
   for (let i = 0; i < 50; i++) {
-    console.log("artist number " + i);
+    // console.log("artist number " + i + `= ${topArtistsObj[i]}`);
+
     topArtistsArray.push(topArtistsObj[i]);
   }
-  //   console.log(topArtistsArray);
+  console.log(topArtistsArray);
   return topArtistsArray;
 };
 

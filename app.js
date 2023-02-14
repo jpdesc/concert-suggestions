@@ -9,15 +9,16 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const topArtists = {};
+var topArtists = {};
 var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
-  console.log("inside get function");
   res.render("index", { topArtistsArray: topArtistsArray });
 });
 
 app.post("/", async function (req, res) {
+  topArtists = {};
+  topArtistsArray = [];
   let time_range = req.body.range;
   let limit = req.body.quantity;
   const response = await getTopArtists(time_range, limit);
@@ -27,8 +28,9 @@ app.post("/", async function (req, res) {
     let artist = artistObj["name"];
     topArtists[idx] = artist;
   }
+  console.log(topArtists);
   console.log(getTopArtistsArray(topArtists));
-  var topArtistsArray = getTopArtistsArray(topArtists);
+  topArtistsArray = getTopArtistsArray(topArtists);
   res.redirect("/");
 });
 
