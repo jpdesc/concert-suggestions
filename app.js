@@ -12,16 +12,23 @@ const topArtists = {};
 const topArtistsArray = [];
 
 app.get("/", async function (req, res) {
+  console.log("inside get function");
   res.render("index", { topArtistsArray: topArtistsArray });
 });
 
 app.post("/", async function (req, res) {
-  const response = await getTopArtists();
+  console.log(req.body);
+  let time_range = req.body.range;
+  let limit = req.body.quantity;
+  const response = await getTopArtists(time_range, limit);
+  console.log(response);
   const { items } = await response.json();
   for (let idx in items) {
-    let obj = items[idx];
+    let artistObj = items[idx];
+    let artist = artistObj["name"];
+    console.log(artist);
     //   console.log(obj["name"]);
-    topArtists[idx] = obj["name"];
+    topArtists[idx] = artist;
   }
   let topArtistsArray = getTopArtistsArray(topArtists);
   res.redirect("/");

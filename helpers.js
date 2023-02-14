@@ -10,7 +10,7 @@ const ticketmaster_api_key = process.env.TICKETMASTER_API_KEY;
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
 
-const TOP_ARTISTS_BASE_ENDPOINT = `https://api.spotify.com/v1/me/top/artists/`;
+const TOP_ARTISTS_BASE_ENDPOINT = `https://api.spotify.com/v1/me/top/artists/?`;
 const TICKETMASTER_BASE_ENDPOINT =
   "https://app.ticketmaster.com/discovery/v2/events.json?apikey=" +
   ticketmaster_api_key;
@@ -34,7 +34,12 @@ const getAccessToken = async () => {
 
 export const getTopArtists = async (time_range, limit) => {
   const { access_token } = await getAccessToken();
+  time_range = time_range !== undefined ? `&time_range=${time_range}` : "";
+  limit = limit !== undefined ? `&limit=${limit}` : "";
+  console.log(time_range);
+  console.log(limit);
   const TOP_ARTISTS_ENDPOINT = TOP_ARTISTS_BASE_ENDPOINT + time_range + limit;
+  console.log(TOP_ARTISTS_ENDPOINT);
   return fetch(TOP_ARTISTS_ENDPOINT, {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -45,8 +50,14 @@ export const getTopArtists = async (time_range, limit) => {
 export const getTopArtistsArray = (topArtistsObj) => {
   let topArtistsArray = [];
   for (let i = 0; i < 50; i++) {
+    console.log("artist number " + i);
     topArtistsArray.push(topArtistsObj[i]);
   }
   console.log(topArtistsArray);
   return topArtistsArray;
+};
+
+export const getEventsForArtist = async (artist) => {
+  const GET_EVENTS_ENDPOINT =
+    ticketmaster_api_key + "&city=Los Angeles" + "?keyword=" + artist;
 };
