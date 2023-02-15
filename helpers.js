@@ -63,7 +63,30 @@ export const getTopArtistsArray = (topArtistsObj) => {
   return topArtistsArray;
 };
 
-export const getEventsForArtist = async (artist) => {
+// "&city=Los Angeles" +
+
+export const eventsResponse = (artist) => {
   const GET_EVENTS_ENDPOINT =
-    ticketmaster_api_key + "&city=Los Angeles" + "?keyword=" + artist;
+    TICKETMASTER_BASE_ENDPOINT + "&keyword=" + artist + "&includeSpellcheck=no";
+
+  return fetch(GET_EVENTS_ENDPOINT);
+};
+
+export const getEvents = async (artist) => {
+  let response = await eventsResponse(artist);
+  let eventsJSON = await response.json();
+  let parsedEvents = eventsJSON._embedded;
+  let eventsArr = [];
+  var max = parsedEvents ? parsedEvents.events.length : 0;
+  for (let i = 0; i < max; i++) {
+    if (
+      parsedEvents.events[i]
+        ? parsedEvents.events[i].name.includes(artist)
+        : false
+    ) {
+      console.log("true");
+      eventsArr.push(parsedEvents.events[i]);
+    }
+  }
+  return eventsArr;
 };

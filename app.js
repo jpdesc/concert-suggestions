@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import https from "https";
-import { getTopArtists, getTopArtistsArray } from "./helpers.js";
+import { getTopArtists, getTopArtistsArray, getEvents } from "./helpers.js";
 
 const app = express();
 app.set("view engine", "ejs");
@@ -10,10 +10,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 var topArtists = {};
+var concertInfo = {};
 var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
-  res.render("index", { topArtistsArray: topArtistsArray });
+  console.log(topArtists);
+  res.render("index", {
+    topArtistsArray: topArtistsArray,
+    topArtists: topArtists,
+  });
 });
 
 app.post("/", async function (req, res) {
@@ -26,11 +31,15 @@ app.post("/", async function (req, res) {
   for (let idx in items) {
     let artistObj = items[idx];
     let artist = artistObj["name"];
-    topArtists[idx] = artist;
+    topArtists[idx] = {
+      artist: artist,
+      events: await getEvents(artist),
+    };
+    // console.log(topArtists[idx]);
   }
-  console.log(topArtists);
-  console.log(getTopArtistsArray(topArtists));
-  topArtistsArray = getTopArtistsArray(topArtists);
+  //   topArtistsArray = getTopArtistsArray(topArtists);
+  //   topArtists = await getEvents(topArtistsArray);
+  //   console.log(topArtists);
   res.redirect("/");
 });
 
