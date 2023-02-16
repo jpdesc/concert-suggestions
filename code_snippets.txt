@@ -1,0 +1,1 @@
+https://api.music.apple.com/v1/me/history/heavy-rotation (with Authorization & Music-User-Token headers)

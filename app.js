@@ -14,7 +14,7 @@ var concertInfo = {};
 var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
-  console.log(topArtists);
+  console.log(typeof topArtists);
   res.render("index", {
     topArtistsArray: topArtistsArray,
     topArtists: topArtists,
@@ -29,17 +29,16 @@ app.post("/", async function (req, res) {
   const response = await getTopArtists(time_range, limit);
   const { items } = await response.json();
   for (let idx in items) {
+    // console.log(Number(idx));
     let artistObj = items[idx];
     let artist = artistObj["name"];
     topArtists[idx] = {
       artist: artist,
       events: await getEvents(artist),
     };
-    // console.log(topArtists[idx]);
   }
-  //   topArtistsArray = getTopArtistsArray(topArtists);
-  //   topArtists = await getEvents(topArtistsArray);
-  //   console.log(topArtists);
+  console.log(topArtists[1]);
+
   res.redirect("/");
 });
 

@@ -35,7 +35,7 @@ const getAccessToken = async () => {
 
 export const getTopArtists = async (time_range, limit) => {
   const { access_token } = await getAccessToken();
-  console.log(access_token);
+  //   console.log(access_token);
   time_range = `time_range=${time_range}`;
   limit =
     limit && !time_range
@@ -44,7 +44,7 @@ export const getTopArtists = async (time_range, limit) => {
       ? `&limit=${limit}`
       : "";
   const TOP_ARTISTS_ENDPOINT = TOP_ARTISTS_BASE_ENDPOINT + time_range + limit;
-  console.log(TOP_ARTISTS_ENDPOINT);
+  //   console.log(TOP_ARTISTS_ENDPOINT);
   return fetch(TOP_ARTISTS_ENDPOINT, {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -59,7 +59,7 @@ export const getTopArtistsArray = (topArtistsObj) => {
 
     topArtistsArray.push(topArtistsObj[i]);
   }
-  console.log(topArtistsArray);
+  //   console.log(topArtistsArray);
   return topArtistsArray;
 };
 
@@ -84,9 +84,17 @@ export const getEvents = async (artist) => {
         ? parsedEvents.events[i].name.includes(artist)
         : false
     ) {
-      console.log("true");
+      //   console.log("true");
       eventsArr.push(parsedEvents.events[i]);
+      //   console.log(getPrettyPrinted(parsedEvents.events[i]));
     }
   }
+  //   console.log(eventsArr);
+
   return eventsArr;
+};
+
+const getPrettyPrinted = (jsonObj) => {
+  var jsonEventPretty = JSON.stringify(jsonObj, null, 2);
+  return jsonEventPretty;
 };

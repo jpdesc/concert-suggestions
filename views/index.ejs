@@ -21,8 +21,8 @@
     <button type="submit" name="query">Add</button>
   </form>
 
-   <p>All <%= topArtists[0] %></p>
-  <% for (let i = 0; i < topArtists.length; i++){%>
-  <p><%= topArtists[i] %></p>
+   <p>All <%= topArtists[0].artist %></p>
+  <% for (let i = 0; i < Object.keys(topArtists).length; i++){%>
+  <p><%= topArtists[i].artist %></p>
   <% } %>
   <%- include("footer") -%>
