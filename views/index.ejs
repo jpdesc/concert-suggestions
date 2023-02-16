@@ -1,5 +1,7 @@
 
   <%- include("header") -%>
+<h1>Eventful Live</h1>
+<hr>
   <form action="/" method="post">
     <label for="quantity">Number of Artists: </label>
     <input
@@ -20,9 +22,11 @@
     </select><br>
     <button type="submit" name="query">Add</button>
   </form>
+<hr>
 
-   <p>All <%= topArtists[0].artist %></p>
   <% for (let i = 0; i < Object.keys(topArtists).length; i++){%>
   <p><%= topArtists[i].artist %></p>
+  <img src=<%=topArtists[i].image%> >
+
   <% } %>
   <%- include("footer") -%>

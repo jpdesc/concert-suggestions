@@ -36,8 +36,12 @@ app.post("/", async function (req, res) {
       artist: artist,
       events: await getEvents(artist),
     };
+    if (topArtists[idx].events[0]) {
+      topArtists[idx].image = topArtists[idx].events[0].images[0].url;
+
+      console.log(topArtists[idx].events[0].name);
+    }
   }
-  console.log(topArtists[1]);
 
   res.redirect("/");
 });
