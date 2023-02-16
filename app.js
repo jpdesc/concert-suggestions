@@ -2,7 +2,12 @@ import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import https from "https";
-import { getTopArtists, getTopArtistsArray, getEvents } from "./helpers.js";
+import {
+  getTopArtists,
+  getTopArtistsArray,
+  getEvents,
+  formatEvents,
+} from "./helpers.js";
 
 const app = express();
 app.set("view engine", "ejs");
@@ -29,19 +34,14 @@ app.post("/", async function (req, res) {
   const response = await getTopArtists(time_range, limit);
   const { items } = await response.json();
   for (let idx in items) {
-    // console.log(Number(idx));
     let artistObj = items[idx];
-    let artist = artistObj["name"];
+    var artistName = artistObj["name"];
     topArtists[idx] = {
-      artist: artist,
-      events: await getEvents(artist),
+      artist: artistName,
+      eventInfo: await formatEvents(artistName),
     };
-    if (topArtists[idx].events[0]) {
-      topArtists[idx].image = topArtists[idx].events[0].images[0].url;
-
-      console.log(topArtists[idx].events[0].name);
-    }
   }
+  console.log(topArtists);
 
   res.redirect("/");
 });

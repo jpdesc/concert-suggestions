@@ -4,3 +4,8 @@ html {
   min-height: 1000px;
   font-family: "helvetica neue";
 }
+
+img {
+  height: 75px;
+  width: 100px;
+}

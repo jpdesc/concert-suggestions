@@ -98,3 +98,21 @@ const getPrettyPrinted = (jsonObj) => {
   var jsonEventPretty = JSON.stringify(jsonObj, null, 2);
   return jsonEventPretty;
 };
+
+export const formatEvents = async (artist) => {
+  let events = await getEvents(artist);
+  let eventList = [];
+  for (let i in events) {
+    let event = events[i];
+    let eventObj = {
+      title: event.name,
+      date: event.dates.start.localDate,
+      tickets: event.url,
+      time: event.dates.start.localTime,
+      venue: event._embedded,
+      location: event._embedded,
+    };
+    eventList.push(eventObj);
+  }
+  return eventList;
+};
