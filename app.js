@@ -7,7 +7,8 @@ import {
   getTopArtistsArray,
   getEvents,
   formatEvents,
-  getArtistInfo,
+  getArtistID,
+  getGeocoding,
 } from "./helpers.js";
 
 const app = express();
@@ -29,19 +30,24 @@ app.get("/", async function (req, res) {
 app.post("/", async function (req, res) {
   topArtists = {};
   topArtistsArray = [];
-  let time_range = req.body.range;
+  let timeRange = req.body.range;
   let limit = req.body.quantity;
-  const response = await getTopArtists(time_range, limit);
+  let radius = req.body.radius;
+  let city = req.body.location;
+  const response = await getTopArtists(timeRange, limit);
   const { items } = await response.json();
   for (let idx in items) {
     let artistObj = items[idx];
     var artistName = artistObj["name"];
+    var id = await getArtistID(artistName);
     topArtists[idx] = {
       artist: artistName,
-      eventInfo: await formatEvents(artistName),
-      artistInfo: await getArtistInfo(artistName),
+      eventInfo: await formatEvents(id, city, radius),
+      id: id,
+      image: artistObj.images[0].url,
     };
   }
+  //   console.log(topArtists);
   res.redirect("/");
 });
 

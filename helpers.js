@@ -7,6 +7,7 @@ const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const refresh_token = process.env.REFRESH_TOKEN;
 const ticketmaster_api_key = process.env.TICKETMASTER_API_KEY;
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
@@ -19,7 +20,9 @@ const TICKETMASTER_BASE_ENDPOINT =
 const ARTIST_INFO_ENDPOINT =
   "https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=" +
   ticketmaster_api_key;
-// "?time_range=long_term&limit=50";
+
+const OPENWEATHER_BASE_ENDPOINT =
+  "https://api.openweathermap.org/geo/1.0/direct?q=";
 
 const getAccessToken = async () => {
   const response = await fetch(TOKEN_ENDPOINT, {
@@ -63,15 +66,20 @@ export const getTopArtistsArray = (topArtistsObj) => {
   return topArtistsArray;
 };
 
-export const eventsResponse = (artist) => {
+export const eventsResponse = (id, city, radius) => {
+  if (!radius) {
+    radius = 25;
+  }
+  const LOCATION_STRING =
+    city && radius ? `&city=${city}&radius=${radius}` : "";
   const GET_EVENTS_ENDPOINT =
-    TICKETMASTER_BASE_ENDPOINT + "&keyword=" + artist + "&includeSpellcheck=no";
+    TICKETMASTER_BASE_ENDPOINT + "&id=" + id + "&includeSpellcheck=no";
 
   return fetch(GET_EVENTS_ENDPOINT);
 };
 
-export const getEvents = async (artist) => {
-  let response = await eventsResponse(artist);
+export const getEvents = async (id, city, radius) => {
+  let response = await eventsResponse(id, city, radius);
   let eventsJSON = await response.json();
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
@@ -85,7 +93,7 @@ export const getEvents = async (artist) => {
       eventsArr.push(parsedEvents.events[i]);
     }
   }
-
+  console.log(eventsArr);
   return eventsArr;
 };
 
@@ -112,27 +120,30 @@ export const formatEvents = async (artist) => {
   return eventList;
 };
 
-const attractionResponse = async (artist) => {
+const attractionResponse = (artist) => {
   const ATTRACTION_ENDPOINT = ARTIST_INFO_ENDPOINT + "&keyword=" + artist;
   return fetch(ATTRACTION_ENDPOINT);
 };
 
-export const getArtistInfo = async (artist) => {
+export const getArtistID = async (artist) => {
   let response = await attractionResponse(artist);
   let artistJSON = await response.json();
-  if (artistJSON._embedded) {
-    let base = artistJSON._embedded.attractions[0];
-    var artistInfoObj = {
-      id: base.id,
-      image: base.images[0].url,
-    };
-    // console.log(base);
-  } else {
-    var artistInfoObj = {
-      id: null,
-      image: null,
-    };
-  }
+  let id = artistJSON._embedded ? artistJSON._embedded.attractions[0].id : null;
+  return id;
+};
 
-  return artistInfoObj;
+const goecodingResponse = (cityName) => {
+  const GEOCODING_ENDPOINT =
+    OPENWEATHER_BASE_ENDPOINT + cityName + "&appid=" + OPENWEATHER_API_KEY;
+  return fetch(GEOCODING_ENDPOINT);
+};
+
+export const getGeocoding = async (cityName) => {
+  let response = await goecodingResponse(cityName);
+  let geoJSON = await response.json();
+  let coordinates = {
+    latitude: geoJSON[0].lattitude,
+    longitude: geoJSON[0].longitude,
+  };
+  return coordinates;
 };
