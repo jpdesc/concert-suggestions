@@ -16,6 +16,9 @@ const TICKETMASTER_BASE_ENDPOINT =
   "https://app.ticketmaster.com/discovery/v2/events.json?apikey=" +
   ticketmaster_api_key;
 
+const ARTIST_INFO_ENDPOINT =
+  "https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=" +
+  ticketmaster_api_key;
 // "?time_range=long_term&limit=50";
 
 const getAccessToken = async () => {
@@ -55,15 +58,10 @@ export const getTopArtists = async (time_range, limit) => {
 export const getTopArtistsArray = (topArtistsObj) => {
   let topArtistsArray = [];
   for (let i = 0; i < 50; i++) {
-    // console.log("artist number " + i + `= ${topArtistsObj[i]}`);
-
     topArtistsArray.push(topArtistsObj[i]);
   }
-  //   console.log(topArtistsArray);
   return topArtistsArray;
 };
-
-// "&city=Los Angeles" +
 
 export const eventsResponse = (artist) => {
   const GET_EVENTS_ENDPOINT =
@@ -84,12 +82,9 @@ export const getEvents = async (artist) => {
         ? parsedEvents.events[i].name.includes(artist)
         : false
     ) {
-      //   console.log("true");
       eventsArr.push(parsedEvents.events[i]);
-      //   console.log(getPrettyPrinted(parsedEvents.events[i]));
     }
   }
-  //   console.log(eventsArr);
 
   return eventsArr;
 };
@@ -115,4 +110,29 @@ export const formatEvents = async (artist) => {
     eventList.push(eventObj);
   }
   return eventList;
+};
+
+const attractionResponse = async (artist) => {
+  const ATTRACTION_ENDPOINT = ARTIST_INFO_ENDPOINT + "&keyword=" + artist;
+  return fetch(ATTRACTION_ENDPOINT);
+};
+
+export const getArtistInfo = async (artist) => {
+  let response = await attractionResponse(artist);
+  let artistJSON = await response.json();
+  if (artistJSON._embedded) {
+    let base = artistJSON._embedded.attractions[0];
+    var artistInfoObj = {
+      id: base.id,
+      image: base.images[0].url,
+    };
+    // console.log(base);
+  } else {
+    var artistInfoObj = {
+      id: null,
+      image: null,
+    };
+  }
+
+  return artistInfoObj;
 };

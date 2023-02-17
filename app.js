@@ -7,6 +7,7 @@ import {
   getTopArtistsArray,
   getEvents,
   formatEvents,
+  getArtistInfo,
 } from "./helpers.js";
 
 const app = express();
@@ -19,7 +20,6 @@ var concertInfo = {};
 var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
-  console.log(typeof topArtists);
   res.render("index", {
     topArtistsArray: topArtistsArray,
     topArtists: topArtists,
@@ -39,10 +39,9 @@ app.post("/", async function (req, res) {
     topArtists[idx] = {
       artist: artistName,
       eventInfo: await formatEvents(artistName),
+      artistInfo: await getArtistInfo(artistName),
     };
   }
-  console.log(topArtists);
-
   res.redirect("/");
 });
 
