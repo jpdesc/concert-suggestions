@@ -1,14 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
-import https from "https";
 import {
   getTopArtists,
-  getTopArtistsArray,
-  getEvents,
   formatEvents,
   getArtistID,
-  getGeocoding,
+  getRecommended,
 } from "./helpers.js";
 
 const app = express();
@@ -17,19 +13,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 var topArtists = {};
-var concertInfo = {};
-var topArtistsArray = [];
 
 app.get("/", async function (req, res) {
   res.render("index", {
-    topArtistsArray: topArtistsArray,
     topArtists: topArtists,
   });
 });
 
 app.post("/", async function (req, res) {
   topArtists = {};
-  topArtistsArray = [];
+  var recommendedArray = [];
   let timeRange = req.body.range;
   let limit = req.body.quantity;
   let radius = req.body.radius;
@@ -47,6 +40,7 @@ app.post("/", async function (req, res) {
       image: artistObj.images[0].url,
     };
   }
+  recommendedArray = await getRecommended(artistName, recommendedArray);
   //   console.log(topArtists);
   res.redirect("/");
 });

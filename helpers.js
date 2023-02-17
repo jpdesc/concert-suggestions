@@ -8,6 +8,7 @@ const client_secret = process.env.CLIENT_SECRET;
 const refresh_token = process.env.REFRESH_TOKEN;
 const ticketmaster_api_key = process.env.TICKETMASTER_API_KEY;
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
+const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
 
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
@@ -20,6 +21,10 @@ const TICKETMASTER_BASE_ENDPOINT =
 const ARTIST_INFO_ENDPOINT =
   "https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=" +
   ticketmaster_api_key;
+
+const LASTFM_BASE_ENDPOINT =
+  "https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=";
+const LASTFM_SUFFIX = "&format=json";
 
 const OPENWEATHER_BASE_ENDPOINT =
   "https://api.openweathermap.org/geo/1.0/direct?q=";
@@ -60,7 +65,7 @@ export const getTopArtists = async (time_range, limit) => {
 
 export const getTopArtistsArray = (topArtistsObj) => {
   let topArtistsArray = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i in topArtistsObj) {
     topArtistsArray.push(topArtistsObj[i]);
   }
   return topArtistsArray;
@@ -147,3 +152,52 @@ export const getGeocoding = async (cityName) => {
   };
   return coordinates;
 };
+
+export const createRecommendedArr = async (artistsObj) => {
+  let topArtistsArray = await getTopArtistsArray(artistsObj);
+  for (let idx in topArtistsArray) {
+    let recommended = getRecommended(topArtists[idx]);
+  }
+};
+
+const lastfmResponse = (artist) => {
+  const LASTFM_ENDPOINT =
+    LASTFM_BASE_ENDPOINT +
+    artist +
+    "&api_key=" +
+    LASTFM_API_KEY +
+    LASTFM_SUFFIX;
+  console.log(LASTFM_ENDPOINT);
+  return fetch(LASTFM_ENDPOINT);
+};
+
+export const getRecommended = async (artist, recommendedArray) => {
+  var currRecommended = recommendedArray;
+  let response = await lastfmResponse(artist);
+  let lastfmJSON = await response.json();
+  let recommendedArtists = lastfmJSON.similarartists;
+  for (let i = 0; i < 5; i++) {
+    if (recommendedArtists.artist[i]) {
+      console.log(currRecommended);
+      currRecommended.push(recommendedArtists.artist[i].name);
+    }
+  }
+  console.log(currRecommended);
+  return currRecommended;
+  // for (let i in lastfmJSON.similarartist.artist)
+  // similarartists.artist[i].name
+};
+
+// const response = await getTopArtists(timeRange, limit);
+// const { items } = await response.json();
+// for (let idx in items) {
+//   let artistObj = items[idx];
+//   var artistName = artistObj["name"];
+//   var id = await getArtistID(artistName);
+//   topArtists[idx] = {
+//     artist: artistName,
+//     eventInfo: await formatEvents(id, city, radius),
+//     id: id,
+//     image: artistObj.images[0].url,
+//   };
+// }
