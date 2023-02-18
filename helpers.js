@@ -46,7 +46,6 @@ const getAccessToken = async () => {
 
 export const getTopArtists = async (time_range, limit) => {
   const { access_token } = await getAccessToken();
-  //   console.log(access_token);
   time_range = `time_range=${time_range}`;
   limit =
     limit && !time_range
@@ -55,7 +54,6 @@ export const getTopArtists = async (time_range, limit) => {
       ? `&limit=${limit}`
       : "";
   const TOP_ARTISTS_ENDPOINT = TOP_ARTISTS_BASE_ENDPOINT + time_range + limit;
-  //   console.log(TOP_ARTISTS_ENDPOINT);
   return fetch(TOP_ARTISTS_ENDPOINT, {
     headers: {
       Authorization: `Bearer ${access_token}`,
@@ -98,7 +96,7 @@ export const getEvents = async (id, city, radius) => {
       eventsArr.push(parsedEvents.events[i]);
     }
   }
-  console.log(eventsArr);
+  //   console.log(eventsArr);
   return eventsArr;
 };
 
@@ -167,7 +165,7 @@ const lastfmResponse = (artist) => {
     "&api_key=" +
     LASTFM_API_KEY +
     LASTFM_SUFFIX;
-  console.log(LASTFM_ENDPOINT);
+  //   console.log(LASTFM_ENDPOINT);
   return fetch(LASTFM_ENDPOINT);
 };
 
@@ -178,14 +176,23 @@ export const getRecommended = async (artist, recommendedArray) => {
   let recommendedArtists = lastfmJSON.similarartists;
   for (let i = 0; i < 5; i++) {
     if (recommendedArtists.artist[i]) {
-      console.log(currRecommended);
-      currRecommended.push(recommendedArtists.artist[i].name);
+      currRecommended.push({
+        artist: recommendedArtists.artist[i].name,
+        image: recommendedArtists.artist[i].image[0]["#text"],
+      });
     }
   }
-  console.log(currRecommended);
   return currRecommended;
-  // for (let i in lastfmJSON.similarartist.artist)
-  // similarartists.artist[i].name
+};
+
+export const createArtistObj = async (artist, id, city, radius, image) => {
+  let artistInfoObj = {
+    artist: artist,
+    id: id,
+    image: image,
+    eventInfo: await formatEvents(id, city, radius),
+  };
+  return artistInfoObj;
 };
 
 // const response = await getTopArtists(timeRange, limit);
