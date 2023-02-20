@@ -14,6 +14,7 @@ app.use(express.static("public"));
 
 var topArtists = {};
 var recommendedArtists = {};
+var eventIndices;
 
 app.get("/", async function (req, res) {
   res.render("index", {
@@ -45,7 +46,7 @@ app.post("/", async function (req, res) {
       image
     );
   }
-  console.log(recommendedArray);
+
   for (let idx in recommendedArray) {
     let artistName = recommendedArray[idx].artist;
     let id = await getArtistID(artistName);
@@ -58,7 +59,7 @@ app.post("/", async function (req, res) {
       image
     );
   }
-  console.log(recommendedArray);
+  console.log(recommendedArtists);
   res.redirect("/");
 });
 

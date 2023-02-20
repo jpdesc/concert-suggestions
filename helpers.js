@@ -70,14 +70,13 @@ export const getTopArtistsArray = (topArtistsObj) => {
 };
 
 export const eventsResponse = (id, city, radius) => {
-  if (!radius) {
-    radius = 25;
+  if (radius === "None") {
+    var radius = 50;
   }
-  const LOCATION_STRING =
-    city && radius ? `&city=${city}&radius=${radius}` : "";
+  const LOCATION_STRING = city ? `&city=${city}&radius=${radius}` : "";
   const GET_EVENTS_ENDPOINT =
-    TICKETMASTER_BASE_ENDPOINT + "&id=" + id + "&includeSpellcheck=no";
-
+    TICKETMASTER_BASE_ENDPOINT + "&attractionId=" + id + LOCATION_STRING;
+  console.log(GET_EVENTS_ENDPOINT);
   return fetch(GET_EVENTS_ENDPOINT);
 };
 
@@ -88,15 +87,10 @@ export const getEvents = async (id, city, radius) => {
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
   for (let i = 0; i < max; i++) {
-    if (
-      parsedEvents.events[i]
-        ? parsedEvents.events[i].name.includes(artist)
-        : false
-    ) {
-      eventsArr.push(parsedEvents.events[i]);
-    }
+    console.log(parsedEvents.events[i]);
+    eventsArr.push(parsedEvents.events[i]);
   }
-  //   console.log(eventsArr);
+  console.log(eventsArr);
   return eventsArr;
 };
 
@@ -105,8 +99,8 @@ const getPrettyPrinted = (jsonObj) => {
   return jsonEventPretty;
 };
 
-export const formatEvents = async (artist) => {
-  let events = await getEvents(artist);
+export const formatEvents = async (id, city, radius) => {
+  let events = await getEvents(id, city, radius);
   let eventList = [];
   for (let i in events) {
     let event = events[i];
