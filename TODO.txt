@@ -1,1 +1,1 @@
-1. Find an API to help convert a user's input of zip code or city name to latitude and longitude.
+1. Get events to output on front page

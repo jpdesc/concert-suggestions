@@ -1,11 +1,25 @@
 import express from "express";
 import bodyParser from "body-parser";
+import mongoose from "mongoose";
 import {
   getTopArtists,
   createArtistObj,
   getArtistID,
   getRecommended,
 } from "./helpers.js";
+
+mongoose.connect("mongodb://localhost:27017/concert-genie", {
+  useNewUrlParser: true,
+});
+
+const userSchema = new mongoose.Schema({
+  username: String,
+  topArtists: Object,
+  recommendedArtists: Object,
+});
+
+const User = mongoose.model("User", userSchema);
+const user = new User({ username: jpdesc });
 
 const app = express();
 app.set("view engine", "ejs");
@@ -14,17 +28,20 @@ app.use(express.static("public"));
 
 var topArtists = {};
 var recommendedArtists = {};
-var eventIndices;
+var eventIndices = { top: [], recommended: [] };
 
 app.get("/", async function (req, res) {
   res.render("index", {
     topArtists: topArtists,
+    topArtistsEvents: eventIndices.top,
+    recommendedEvents: eventIndices.recommended,
   });
 });
 
 app.post("/", async function (req, res) {
   topArtists = {};
   recommendedArtists = {};
+  eventIndices = { top: [], recommended: [] };
   var recommendedArray = [];
   let timeRange = req.body.range;
   var limit = req.body.quantity;
@@ -45,6 +62,9 @@ app.post("/", async function (req, res) {
       radius,
       image
     );
+    if (topArtists[idx].eventInfo[0]) {
+      eventIndices.top.push(recommendedArtists[idx]);
+    }
   }
 
   for (let idx in recommendedArray) {
@@ -58,8 +78,11 @@ app.post("/", async function (req, res) {
       radius,
       image
     );
+    if (recommendedArtists[idx].eventInfo[0]) {
+      console.log(recommendedArtists[idx]);
+      eventIndices.recommended.push(recommendedArtists[idx]);
+    }
   }
-  console.log(recommendedArtists);
   res.redirect("/");
 });
 

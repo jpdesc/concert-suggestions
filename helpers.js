@@ -76,21 +76,19 @@ export const eventsResponse = (id, city, radius) => {
   const LOCATION_STRING = city ? `&city=${city}&radius=${radius}` : "";
   const GET_EVENTS_ENDPOINT =
     TICKETMASTER_BASE_ENDPOINT + "&attractionId=" + id + LOCATION_STRING;
-  console.log(GET_EVENTS_ENDPOINT);
   return fetch(GET_EVENTS_ENDPOINT);
 };
 
 export const getEvents = async (id, city, radius) => {
   let response = await eventsResponse(id, city, radius);
   let eventsJSON = await response.json();
+  console.log(eventsJSON);
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
   for (let i = 0; i < max; i++) {
-    console.log(parsedEvents.events[i]);
     eventsArr.push(parsedEvents.events[i]);
   }
-  console.log(eventsArr);
   return eventsArr;
 };
 
@@ -127,22 +125,6 @@ export const getArtistID = async (artist) => {
   let artistJSON = await response.json();
   let id = artistJSON._embedded ? artistJSON._embedded.attractions[0].id : null;
   return id;
-};
-
-const goecodingResponse = (cityName) => {
-  const GEOCODING_ENDPOINT =
-    OPENWEATHER_BASE_ENDPOINT + cityName + "&appid=" + OPENWEATHER_API_KEY;
-  return fetch(GEOCODING_ENDPOINT);
-};
-
-export const getGeocoding = async (cityName) => {
-  let response = await goecodingResponse(cityName);
-  let geoJSON = await response.json();
-  let coordinates = {
-    latitude: geoJSON[0].lattitude,
-    longitude: geoJSON[0].longitude,
-  };
-  return coordinates;
 };
 
 export const createRecommendedArr = async (artistsObj) => {
@@ -189,16 +171,18 @@ export const createArtistObj = async (artist, id, city, radius, image) => {
   return artistInfoObj;
 };
 
-// const response = await getTopArtists(timeRange, limit);
-// const { items } = await response.json();
-// for (let idx in items) {
-//   let artistObj = items[idx];
-//   var artistName = artistObj["name"];
-//   var id = await getArtistID(artistName);
-//   topArtists[idx] = {
-//     artist: artistName,
-//     eventInfo: await formatEvents(id, city, radius),
-//     id: id,
-//     image: artistObj.images[0].url,
-//   };
-// }
+const goecodingResponse = (cityName) => {
+  const GEOCODING_ENDPOINT =
+    OPENWEATHER_BASE_ENDPOINT + cityName + "&appid=" + OPENWEATHER_API_KEY;
+  return fetch(GEOCODING_ENDPOINT);
+};
+
+export const getGeocoding = async (cityName) => {
+  let response = await goecodingResponse(cityName);
+  let geoJSON = await response.json();
+  let coordinates = {
+    latitude: geoJSON[0].lattitude,
+    longitude: geoJSON[0].longitude,
+  };
+  return coordinates;
+};

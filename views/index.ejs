@@ -39,7 +39,20 @@
   </form>
 <hr>
 
-  <% for (let i = 0; i < Object.keys(topArtists).length; i++){%>
+<% for (let i=0; i < topArtistsEvents.length; i++) { %>
+    <% if (topArtistsEvents.length > 0) { %>
+        <span><%=topArtistsEvents[i].artist %></span>
+   <% } %>
+
+<%}%>
+
+<% for (let i=0; i < recommendedEvents.length; i++) { %>
+      <% if (recommendedEvents.length > 0) { %>
+    <span><%=recommendedEvents[i].artist%></span>
+       <% } %>
+<%}%>
+
+ <% for (let i = 0; i < Object.keys(topArtists).length; i++){%>
   <p><%= topArtists[i].artist %></p>
   <% if (topArtists[i].image) {%>
   <img src=<%=topArtists[i].image %> >
