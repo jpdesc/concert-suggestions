@@ -14,12 +14,20 @@ mongoose.connect("mongodb://localhost:27017/concert-genie", {
 
 const userSchema = new mongoose.Schema({
   username: String,
-  topArtists: Object,
-  recommendedArtists: Object,
+  topArtists: [artistSchema],
+  recommendedArtists: [artistSchema],
+});
+
+const artistSchema = new mongoose.Schema({
+  artist: String,
+  photoUrl: String,
+  id: String,
+  events: [eventSchema],
+  relatedArtists: [artistSchema],
 });
 
 const User = mongoose.model("User", userSchema);
-const user = new User({ username: jpdesc });
+const Artist = mongoose.model("Artist", artistSchema);
 
 const app = express();
 app.set("view engine", "ejs");
