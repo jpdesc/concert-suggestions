@@ -1,4 +1,6 @@
 import * as dotenv from "dotenv";
+import { User, Artist, Recommended, Event } from "./models.js";
+
 dotenv.config();
 import querystring from "querystring";
 // import topArtistsArray from "app.js";
@@ -25,9 +27,6 @@ const ARTIST_INFO_ENDPOINT =
 const LASTFM_BASE_ENDPOINT =
   "https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=";
 const LASTFM_SUFFIX = "&format=json";
-
-const OPENWEATHER_BASE_ENDPOINT =
-  "https://api.openweathermap.org/geo/1.0/direct?q=";
 
 const getAccessToken = async () => {
   const response = await fetch(TOKEN_ENDPOINT, {
@@ -145,44 +144,39 @@ const lastfmResponse = (artist) => {
   return fetch(LASTFM_ENDPOINT);
 };
 
-export const getRecommended = async (artist, recommendedArray) => {
-  var currRecommended = recommendedArray;
-  let response = await lastfmResponse(artist);
+export const getRecommended = async (artistObj) => {
+  let response = await lastfmResponse(artistObj.name);
   let lastfmJSON = await response.json();
   let recommendedArtists = lastfmJSON.similarartists;
   for (let i = 0; i < 5; i++) {
     if (recommendedArtists.artist[i]) {
-      currRecommended.push({
-        artist: recommendedArtists.artist[i].name,
+      const recommendedName = recommendedArtists.artist[i].name;
+      const recommendedArtist = new Recommended({
+        name: recommendedName,
         image: recommendedArtists.artist[i].image[0]["#text"],
+        id: await getArtistID(recommendedName),
       });
+      artistObj.relatedArtists.push(recommendedArtist);
     }
   }
-  return currRecommended;
+  return artistObj;
 };
 
-export const createArtistObj = async (artist, id, city, radius, image) => {
-  let artistInfoObj = {
-    artist: artist,
-    id: id,
-    image: image,
-    eventInfo: await formatEvents(id, city, radius),
-  };
-  return artistInfoObj;
-};
+export const populateArtistArray = async (user) => {
+  const response = await getTopArtists("long_term", 50);
+  const { items } = await response.json();
+  for (let i in items) {
+    const artistObj = items[i];
+    const artistName = artistObj["name"];
+    var artist = new Artist({
+      artist: artistName,
+      id: await getArtistID(artistName),
+      image: artistObj.images[0].url,
+    });
+    user.topArtists.push(await getRecommended(artist));
+    user.save();
 
-const goecodingResponse = (cityName) => {
-  const GEOCODING_ENDPOINT =
-    OPENWEATHER_BASE_ENDPOINT + cityName + "&appid=" + OPENWEATHER_API_KEY;
-  return fetch(GEOCODING_ENDPOINT);
-};
-
-export const getGeocoding = async (cityName) => {
-  let response = await goecodingResponse(cityName);
-  let geoJSON = await response.json();
-  let coordinates = {
-    latitude: geoJSON[0].lattitude,
-    longitude: geoJSON[0].longitude,
-  };
-  return coordinates;
+    // User.updateOne({ _id: user._id }, { $push: { topArtists: artist } });
+  }
+  console.log();
 };

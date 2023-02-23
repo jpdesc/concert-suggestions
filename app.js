@@ -1,70 +1,36 @@
 import express from "express";
 import bodyParser from "body-parser";
-import mongoose from "mongoose";
+import { User, Artist, Recommended, Event } from "./models.js";
 import {
   getTopArtists,
-  createArtistObj,
   getArtistID,
   getRecommended,
+  populateArtistArray,
 } from "./helpers.js";
-
-mongoose.connect("mongodb://localhost:27017/concert-genie", {
-  useNewUrlParser: true,
-});
-const eventSchema = new mongoose.Schema({
-  title: String,
-  date: String,
-  tickets: String,
-  time: String,
-  venue: String,
-  location: String,
-});
-
-const relatedArtistSchema = new mongoose.Schema({
-  artist: String,
-  photoUrl: String,
-  id: String,
-  events: [eventSchema],
-});
-
-const artistSchema = new mongoose.Schema({
-  artist: String,
-  photoUrl: String,
-  id: String,
-  events: [eventSchema],
-  relatedArtists: [relatedArtistSchema],
-});
-
-const userSchema = new mongoose.Schema({
-  username: String,
-  city: String,
-  radius: Number,
-  topArtists: [artistSchema],
-});
-
-const User = mongoose.model("User", userSchema);
-const Artist = mongoose.model("Artist", artistSchema);
-const Recommended = mongoose.model("Recommended", relatedArtistSchema);
-const Event = mongoose.model("Event", eventSchema);
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-const user = new User({ username: "jpdesc", city: "Los Angeles", radius: 50 });
-user.save();
-var eventIndices = { top: [], recommended: [] };
-
 app.get("/", async function (req, res) {
   User.findOne({ username: "jpdesc" }, function (err, foundUser) {
-    if (!err) {
-      if (foundUser.artists.length === 0) {
-      }
+    if (foundUser) {
       console.log(foundUser);
+      if (foundUser.topArtists.length === 0) {
+        populateArtistArray(foundUser);
+      }
       res.render("index", {
         artists: foundUser.topArtists,
       });
+    } else {
+      const user = new User({
+        username: "jpdesc",
+        city: "Los Angeles",
+        radius: 50,
+      });
+      user.save();
+      res.redirect("/");
     }
   });
 });
