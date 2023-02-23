@@ -11,11 +11,20 @@ import {
 mongoose.connect("mongodb://localhost:27017/concert-genie", {
   useNewUrlParser: true,
 });
+const eventSchema = new mongoose.Schema({
+  title: String,
+  date: String,
+  tickets: String,
+  time: String,
+  venue: String,
+  location: String,
+});
 
-const userSchema = new mongoose.Schema({
-  username: String,
-  topArtists: [artistSchema],
-  recommendedArtists: [artistSchema],
+const relatedArtistSchema = new mongoose.Schema({
+  artist: String,
+  photoUrl: String,
+  id: String,
+  events: [eventSchema],
 });
 
 const artistSchema = new mongoose.Schema({
@@ -23,26 +32,40 @@ const artistSchema = new mongoose.Schema({
   photoUrl: String,
   id: String,
   events: [eventSchema],
-  relatedArtists: [artistSchema],
+  relatedArtists: [relatedArtistSchema],
+});
+
+const userSchema = new mongoose.Schema({
+  username: String,
+  city: String,
+  radius: Number,
+  topArtists: [artistSchema],
 });
 
 const User = mongoose.model("User", userSchema);
 const Artist = mongoose.model("Artist", artistSchema);
+const Recommended = mongoose.model("Recommended", relatedArtistSchema);
+const Event = mongoose.model("Event", eventSchema);
 
 const app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
-var topArtists = {};
-var recommendedArtists = {};
+const user = new User({ username: "jpdesc", city: "Los Angeles", radius: 50 });
+user.save();
 var eventIndices = { top: [], recommended: [] };
 
 app.get("/", async function (req, res) {
-  res.render("index", {
-    topArtists: topArtists,
-    topArtistsEvents: eventIndices.top,
-    recommendedEvents: eventIndices.recommended,
+  User.findOne({ username: "jpdesc" }, function (err, foundUser) {
+    if (!err) {
+      if (foundUser.artists.length === 0) {
+      }
+      console.log(foundUser);
+      res.render("index", {
+        artists: foundUser.topArtists,
+      });
+    }
   });
 });
 
