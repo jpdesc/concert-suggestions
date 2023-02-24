@@ -5,6 +5,7 @@ import {
   getTopArtists,
   getArtistID,
   getRecommended,
+  updateEvents,
   populateArtistArray,
 } from "./helpers.js";
 
@@ -16,12 +17,17 @@ app.use(express.static("public"));
 app.get("/", async function (req, res) {
   User.findOne({ username: "jpdesc" }, function (err, foundUser) {
     if (foundUser) {
-      console.log(foundUser);
       if (foundUser.topArtists.length === 0) {
         populateArtistArray(foundUser);
       }
+      foundUser.topArtists.forEach((artist) => {
+        updateEvents(foundUser._id, artist.id);
+        artist.relatedArtists.forEach((relatedArtist) => {
+          updateEvents(foundUser._id, relatedArtist.id);
+        });
+      });
       res.render("index", {
-        artists: foundUser.topArtists,
+        events: foundUser.events,
       });
     } else {
       const user = new User({
@@ -36,50 +42,6 @@ app.get("/", async function (req, res) {
 });
 
 app.post("/", async function (req, res) {
-  topArtists = {};
-  recommendedArtists = {};
-  eventIndices = { top: [], recommended: [] };
-  var recommendedArray = [];
-  let timeRange = req.body.range;
-  var limit = req.body.quantity;
-  var radius = req.body.radius;
-  var city = req.body.location;
-  const response = await getTopArtists(timeRange, limit);
-  const { items } = await response.json();
-  for (let idx in items) {
-    var recommendedArray = await getRecommended(artistName, recommendedArray);
-    let artistObj = items[idx];
-    var artistName = artistObj["name"];
-    var id = await getArtistID(artistName);
-    var image = artistObj.images[0].url;
-    topArtists[idx] = await createArtistObj(
-      artistName,
-      id,
-      city,
-      radius,
-      image
-    );
-    if (topArtists[idx].eventInfo[0]) {
-      eventIndices.top.push(recommendedArtists[idx]);
-    }
-  }
-
-  for (let idx in recommendedArray) {
-    let artistName = recommendedArray[idx].artist;
-    let id = await getArtistID(artistName);
-    let image = recommendedArray[idx].image;
-    recommendedArtists[idx] = await createArtistObj(
-      artistName,
-      id,
-      city,
-      radius,
-      image
-    );
-    if (recommendedArtists[idx].eventInfo[0]) {
-      console.log(recommendedArtists[idx]);
-      eventIndices.recommended.push(recommendedArtists[idx]);
-    }
-  }
   res.redirect("/");
 });
 

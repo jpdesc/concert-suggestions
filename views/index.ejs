@@ -39,6 +39,7 @@
   </form>
 <hr>
 
+<% /* %>
 <% for (let i=0; i < artists.length; i++) { %>
     <% if (artists[i].events.length > 0) { %>
         <span><%=artists[i].artist %></span>
@@ -46,7 +47,7 @@
 
 <%}%>
 
-<% /* %>
+
  <% for (let i=0; i < recommendedEvents.length; i++) { %>
       <% if (recommendedEvents.length > 0) { %>
     <span><%=recommendedEvents[i].artist%></span>

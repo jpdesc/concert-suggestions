@@ -9,7 +9,6 @@ const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
 const refresh_token = process.env.REFRESH_TOKEN;
 const ticketmaster_api_key = process.env.TICKETMASTER_API_KEY;
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
 
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
@@ -81,7 +80,6 @@ export const eventsResponse = (id, city, radius) => {
 export const getEvents = async (id, city, radius) => {
   let response = await eventsResponse(id, city, radius);
   let eventsJSON = await response.json();
-  console.log(eventsJSON);
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
@@ -96,22 +94,26 @@ const getPrettyPrinted = (jsonObj) => {
   return jsonEventPretty;
 };
 
-export const formatEvents = async (id, city, radius) => {
-  let events = await getEvents(id, city, radius);
-  let eventList = [];
-  for (let i in events) {
-    let event = events[i];
-    let eventObj = {
+const getUser = async (userId) => {
+  const foundUser = await User.findOne({ _id: userId });
+  return foundUser;
+};
+
+export const updateEvents = async (userId, artistId) => {
+  var foundUser = await getUser(userId);
+  var events = await getEvents(artistId, foundUser.city, foundUser.radius);
+  events.forEach((event) => {
+    var eventObj = new Event({
       title: event.name,
       date: event.dates.start.localDate,
       tickets: event.url,
       time: event.dates.start.localTime,
       venue: event._embedded,
       location: event._embedded,
-    };
-    eventList.push(eventObj);
-  }
-  return eventList;
+    });
+    foundUser.events.push(eventObj);
+  });
+  foundUser.save();
 };
 
 const attractionResponse = (artist) => {
@@ -144,22 +146,24 @@ const lastfmResponse = (artist) => {
   return fetch(LASTFM_ENDPOINT);
 };
 
-export const getRecommended = async (artistObj) => {
-  let response = await lastfmResponse(artistObj.name);
+export const getRecommended = async (artistName) => {
+  const related = [];
+  let response = await lastfmResponse(artistName);
   let lastfmJSON = await response.json();
   let recommendedArtists = lastfmJSON.similarartists;
   for (let i = 0; i < 5; i++) {
     if (recommendedArtists.artist[i]) {
       const recommendedName = recommendedArtists.artist[i].name;
+      console.log(recommendedName);
       const recommendedArtist = new Recommended({
-        name: recommendedName,
+        artist: recommendedName,
         image: recommendedArtists.artist[i].image[0]["#text"],
         id: await getArtistID(recommendedName),
       });
-      artistObj.relatedArtists.push(recommendedArtist);
+      related.push(recommendedArtist);
     }
   }
-  return artistObj;
+  return related;
 };
 
 export const populateArtistArray = async (user) => {
@@ -173,10 +177,14 @@ export const populateArtistArray = async (user) => {
       id: await getArtistID(artistName),
       image: artistObj.images[0].url,
     });
-    user.topArtists.push(await getRecommended(artist));
-    user.save();
+    let relatedArtists = await getRecommended(artistName);
+    relatedArtists.forEach((relatedArtist) => {
+      artist.relatedArtists.push(relatedArtist);
+    });
+    user.topArtists.push(artist);
+    // console.log(user.topArtists);
 
     // User.updateOne({ _id: user._id }, { $push: { topArtists: artist } });
   }
-  console.log();
+  user.save();
 };
