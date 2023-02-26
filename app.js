@@ -1,4 +1,5 @@
 import express from "express";
+import path from "path";
 import bodyParser from "body-parser";
 import { User, Artist, Recommended, Event } from "./models.js";
 import {
@@ -42,6 +43,14 @@ app.get("/", async function (req, res) {
 });
 
 app.post("/", async function (req, res) {
+  res.redirect("/");
+});
+
+app.get("/customize", async function (req, res) {
+  res.redirect("/");
+});
+
+app.post("/customize", async function (req, res) {
   res.redirect("/");
 });
 
