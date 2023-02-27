@@ -25,13 +25,15 @@ app.get("/", async function (req, res) {
       var lastUpdateDelta = moment().diff(moment(foundUser.lastUpdate), "days");
       if (foundUser.events.length === 0 || lastUpdateDelta > 5) {
         foundUser.events = [];
-        foundUser.save();
+
         foundUser.topArtists.forEach((artist) => {
-          updateEvents(foundUser._id, artist.id);
+          setTimeout(updateEvents, 200, foundUser._id, artist.id);
           artist.relatedArtists.forEach((relatedArtist) => {
-            updateEvents(foundUser._id, relatedArtist.id);
+            setTimeout(updateEvents, 200, foundUser._id, relatedArtist.id);
           });
         });
+        // foundUser.save();
+        // res.redirect("/");
       }
       console.log(foundUser.events);
 
