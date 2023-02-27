@@ -70,6 +70,12 @@ app.post("/customize", async function (req, res) {
   res.redirect("/");
 });
 
+app.get("/home", function (req, res) {});
+
+app.get("/register", function (req, res) {});
+
+app.get("/login", function (req, res) {});
+
 app.listen(3000, function () {
   console.log("server is running on port 3000");
 });
