@@ -1,15 +1,20 @@
 
   <%- include("partials/header") -%>
 
+<div id="header">
+<h4>Recommended Events</h4>
+</div>
 
-
-
-<% events.forEach(event => { %>
+<div class="container" id="events">
+    <hr>
+    <% events.forEach(event => { %>
     <% if (event) { %>
         <div><%=event.title %></div>
    <% } %>
 
 <%})%>
+</div>
+
 
 <% /* %>
  <% for (let i=0; i < recommendedEvents.length; i++) { %>
@@ -26,9 +31,10 @@
 
   <% } %> <%*/%>
 
-  <hr>
 
-  <div class="container settings">
+<div id="settings">
+
+  <div class="container">
 <form class="spotify-queries" action="/" method="post">
     <!-- <label for="quantity">Number of Artists: </label>
     <input
@@ -45,6 +51,8 @@
      <option value="medium_term">Medium Term</option>
      <option value="long_term">Long Term</option>
     </select><br> -->
+<hr>
+<div class="form-items">
     <span class="form-left">
         <label for="location">City Name: </label>
     <input
@@ -68,10 +76,16 @@
   </form>
     </span>
 
+
+
+
     <br>
 
 
-<hr>
+
   </div>
 
+</div>
+
+  <hr>
   <%- include("partials/footer") -%>

@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import bodyParser from "body-parser";
+import moment from "moment";
 import { User, Artist, Recommended, Event } from "./models.js";
 import {
   getTopArtists,
@@ -21,12 +22,19 @@ app.get("/", async function (req, res) {
       if (foundUser.topArtists.length === 0) {
         populateArtistArray(foundUser);
       }
-      foundUser.topArtists.forEach((artist) => {
-        updateEvents(foundUser._id, artist.id);
-        artist.relatedArtists.forEach((relatedArtist) => {
-          updateEvents(foundUser._id, relatedArtist.id);
+      var lastUpdateDelta = moment().diff(moment(foundUser.lastUpdate), "days");
+      if (foundUser.events.length === 0 || lastUpdateDelta > 5) {
+        foundUser.events = [];
+        foundUser.save();
+        foundUser.topArtists.forEach((artist) => {
+          updateEvents(foundUser._id, artist.id);
+          artist.relatedArtists.forEach((relatedArtist) => {
+            updateEvents(foundUser._id, relatedArtist.id);
+          });
         });
-      });
+      }
+      console.log(foundUser.events);
+
       res.render("index", {
         events: foundUser.events,
       });

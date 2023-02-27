@@ -5,19 +5,32 @@
   font-family: "Asap", sans-serif;
 }
 
+#header {
+  margin-top: 25px;
+  text-align: center;
+}
+#events {
+  margin: 20px;
+}
+
 img {
   height: 75px;
   width: 100px;
 }
 
-form.spotify-queries {
+form {
   background-color: transparent;
 }
 
-.settings {
+#settings {
+  width: 100%;
   text-align: center;
+  background-color: #e4f9f5;
 }
 
+.form-items {
+  margin-top: 30px;
+}
 .form-left {
   padding: 10px;
 }
@@ -28,4 +41,5 @@ form.spotify-queries {
 
 .btn {
   margin-top: 10px;
+  margin-bottom: 10px;
 }

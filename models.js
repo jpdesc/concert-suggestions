@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
   username: String,
   city: String,
   radius: Number,
+  lastUpdate: String,
   topArtists: [artistSchema],
   events: [eventSchema],
 });
