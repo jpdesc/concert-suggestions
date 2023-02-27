@@ -1,0 +1,24 @@
+
+<%- include("partials/header") -%>
+
+<div class="container">
+ <% artists.forEach(artist => { %>
+    <% if (artist) { %>
+        <div>
+            <h1><%=artist.artist %></h1>
+            <div class="related">
+                <ul>
+                    <% artist.relatedArtists.forEach(related => { %>
+                        <li><%=related.artist%></li>
+                   <% }) %>
+                </ul>
+            </div>
+        </div>
+   <% } %>
+
+<%})%>
+
+</div>
+
+
+<%- include("partials/footer") -%>

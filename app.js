@@ -27,15 +27,14 @@ app.get("/", async function (req, res) {
         foundUser.events = [];
 
         foundUser.topArtists.forEach((artist) => {
-          setTimeout(updateEvents, 200, foundUser._id, artist.id);
+          setTimeout(updateEvents, 200, foundUser._id, artist.id); // setTimeout needed to prevent API rate violations.
           artist.relatedArtists.forEach((relatedArtist) => {
             setTimeout(updateEvents, 200, foundUser._id, relatedArtist.id);
           });
         });
-        // foundUser.save();
-        // res.redirect("/");
+        foundUser.save();
+        res.redirect("/");
       }
-      console.log(foundUser.events);
 
       res.render("index", {
         events: foundUser.events,
@@ -57,7 +56,14 @@ app.post("/", async function (req, res) {
 });
 
 app.get("/customize", async function (req, res) {
-  res.redirect("/");
+  User.findOne({ username: "jpdesc" }, function (err, foundUser) {
+    if (!err) {
+      res.render("customize", { artists: foundUser.topArtists });
+    } else {
+      console.log(err);
+      res.redirect("/");
+    }
+  });
 });
 
 app.post("/customize", async function (req, res) {
