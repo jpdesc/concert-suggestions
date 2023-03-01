@@ -119,14 +119,16 @@ app.post("/register", function (req, res) {
   );
 });
 
-app.get("/auth/google", function (req, res) {
-  passport.authenticate("google", { scope: ["profile"] });
-});
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile"] })
+);
 
 app.get(
   "/auth/google/secrets",
   passport.authenticate("google", { failureRedirect: "/login" }),
   function (req, res) {
+    console.log("/auth/google/secrets");
     // Successful authentication, redirect home.
     res.redirect("/");
   }

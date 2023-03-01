@@ -152,15 +152,19 @@ export const getRecommended = async (artistName) => {
   let lastfmJSON = await response.json();
   let recommendedArtists = lastfmJSON.similarartists;
   for (let i = 0; i < 5; i++) {
-    if (recommendedArtists.artist[i]) {
-      const recommendedName = recommendedArtists.artist[i].name;
-      console.log(recommendedName);
-      const recommendedArtist = new Recommended({
-        artist: recommendedName,
-        image: recommendedArtists.artist[i].image[0]["#text"],
-        id: await getArtistID(recommendedName),
-      });
-      related.push(recommendedArtist);
+    try {
+      if (recommendedArtists.artist[i]) {
+        const recommendedName = recommendedArtists.artist[i].name;
+        console.log(recommendedName);
+        const recommendedArtist = new Recommended({
+          artist: recommendedName,
+          image: recommendedArtists.artist[i].image[0]["#text"],
+          id: await getArtistID(recommendedName),
+        });
+        related.push(recommendedArtist);
+      }
+    } catch (err) {
+      console.log(err);
     }
   }
   return related;
