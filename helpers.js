@@ -96,12 +96,15 @@ const getPrettyPrinted = (jsonObj) => {
 
 const getUser = async (userId) => {
   const foundUser = await User.findOne({ _id: userId });
+  //   console.log(foundUser);
   return foundUser;
 };
 
 export const updateEvents = async (userId, artistId) => {
   var foundUser = await getUser(userId);
-  var events = await getEvents(artistId, foundUser.city, 50);
+  //   console.log(foundUser);
+  var events = await getEvents(artistId, "Los Angeles", 50);
+  //   console.log(events);
   events.forEach((event) => {
     var eventObj = new Event({
       title: event.name,
@@ -124,7 +127,9 @@ const attractionResponse = (artist) => {
 export const getArtistID = async (artist) => {
   let response = await attractionResponse(artist);
   let artistJSON = await response.json();
+  console.log(artistJSON);
   let id = artistJSON._embedded ? artistJSON._embedded.attractions[0].id : null;
+
   return id;
 };
 
@@ -155,7 +160,7 @@ export const getRecommended = async (artistName) => {
     try {
       if (recommendedArtists.artist[i]) {
         const recommendedName = recommendedArtists.artist[i].name;
-        console.log(recommendedName);
+        // console.log(recommendedName);
         const recommendedArtist = new Recommended({
           artist: recommendedName,
           image: recommendedArtists.artist[i].image[0]["#text"],
@@ -178,9 +183,10 @@ export const populateArtistArray = async (user) => {
     const artistName = artistObj["name"];
     var artist = new Artist({
       artist: artistName,
-      id: await getArtistID(artistName),
+      id: await setTimeout(getArtistID, 201, artistName),
       image: artistObj.images[0].url,
     });
+    console.log(artist.id);
     let relatedArtists = await getRecommended(artistName);
     relatedArtists.forEach((relatedArtist) => {
       artist.relatedArtists.push(relatedArtist);

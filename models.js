@@ -74,7 +74,7 @@ passport.use(
     },
     function (accessToken, refreshToken, profile, cb) {
       User.findOrCreate({ googleId: profile.id }, function (err, user) {
-        console.log(user);
+        // console.log(user);
         return cb(err, user);
       });
     }
