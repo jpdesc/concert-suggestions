@@ -101,8 +101,7 @@ const getUser = async (userId) => {
 
 export const updateEvents = async (userId, artistId) => {
   var foundUser = await getUser(userId);
-  var events = await getEvents(artistId, foundUser.city, foundUser.radius);
-  console.log(events);
+  var events = await getEvents(artistId, foundUser.city, 50);
   events.forEach((event) => {
     var eventObj = new Event({
       title: event.name,
