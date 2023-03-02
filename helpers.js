@@ -169,7 +169,7 @@ const attractionResponse = (artist) => {
 export const getArtistID = async (artist) => {
   let response = await attractionResponse(artist);
   let artistJSON = await response.json();
-  console.log(artistJSON);
+  //   console.log(artistJSON);
   let id = artistJSON._embedded ? artistJSON._embedded.attractions[0].id : null;
 
   return id;
@@ -228,7 +228,7 @@ export const populateArtistArray = async (user) => {
       id: await setTimeout(getArtistID, 201, artistName),
       image: artistObj.images[0].url,
     });
-    console.log(artist.id);
+    // console.log(artist.id);
     let relatedArtists = await getRecommended(artistName);
     relatedArtists.forEach((relatedArtist) => {
       artist.relatedArtists.push(relatedArtist);
