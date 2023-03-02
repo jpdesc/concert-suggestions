@@ -5,7 +5,11 @@ import moment from "moment";
 import passport from "passport";
 import * as dotenv from "dotenv";
 import { User, Artist, Recommended, Event } from "./models.js";
-import { updateEvents, populateArtistArray } from "./helpers.js";
+import {
+  updateEvents,
+  populateArtistArray,
+  getGeolocation,
+} from "./helpers.js";
 
 import { app } from "./models.js";
 
@@ -14,6 +18,7 @@ dotenv.config();
 app.get("/", async function (req, res) {
   //   console.log(req.body);
   if (req.user) {
+    console.log(req.user);
     console.log("authenticated");
     User.findOne({ username: req.user.username }, function (err, foundUser) {
       if (foundUser) {
@@ -50,8 +55,11 @@ app.get("/", async function (req, res) {
 
 app.post("/", async function (req, res) {
   const updatedRadius = req.body.radius;
-  const updatedCity = req.body.radius;
-  //   console.log(req.body.user);
+  const updatedCity = req.body.city;
+  req.user.getGeolocation(req.user, updatedCity);
+  User.findOne({ username: req.body.username }, function (err, foundUser) {
+    console.log(foundUser);
+  });
   res.redirect("/");
 });
 
@@ -66,12 +74,26 @@ app.get("/customize", async function (req, res) {
   });
 });
 
-app.post("/customize", async function (req, res) {
+app.get("/updateInfo", async function (req, res) {
+  if (typeof req.user.city === "undefined") {
+    // console.log(req.user);
+    res.render("updateInfo", { user: req.user });
+  } else {
+    // console.log(req.user);
+    res.redirect("/");
+  }
+});
+
+app.post("/updateInfo", async function (req, res) {
+  const city = req.body.city;
+  const radius = req.body.radius;
+  getGeolocation(req.user.username, city, radius);
+
   res.redirect("/");
 });
 
-app.get("/home", function (req, res) {
-  res.render("home");
+app.post("/customize", async function (req, res) {
+  res.redirect("/");
 });
 
 app.get("/login", function (req, res) {
@@ -86,8 +108,6 @@ app.post("/login", function (req, res) {
   //   console.log(user);
   req.login(user, function (err) {
     if (err) {
-      console.log("not working!!!!");
-      console.log(`err = ${err}`);
       res.redirect("/login");
     } else {
       console.log("logged in");
@@ -95,7 +115,7 @@ app.post("/login", function (req, res) {
         failureRedirect: "/login",
         failureMessage: true,
       })(req, res, function () {
-        res.redirect("/");
+        res.redirect("/updateInfo");
       });
     }
   });
@@ -116,7 +136,7 @@ app.post("/register", function (req, res) {
       } else {
         passport.authenticate("local")(req, res, function () {
           //   console.log(res.body);
-          res.redirect("/");
+          res.redirect("/updateInfo");
         });
       }
     }
@@ -134,9 +154,18 @@ app.get(
   function (req, res) {
     console.log("/auth/google/secrets");
     // Successful authentication, redirect home.
-    res.redirect("/");
+    res.redirect("/updateInfo");
   }
 );
+
+app.post("/logout", function (req, res, next) {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.redirect("/");
+  });
+});
 
 app.listen(3000, function () {
   console.log("server is running on port 3000");

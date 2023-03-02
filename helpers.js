@@ -10,6 +10,9 @@ const client_secret = process.env.CLIENT_SECRET;
 const refresh_token = process.env.REFRESH_TOKEN;
 const ticketmaster_api_key = process.env.TICKETMASTER_API_KEY;
 const LASTFM_API_KEY = process.env.LASTFM_API_KEY;
+const SEATGEEK_CLIENT_SECRET = process.env.SEATGEEK_CLIENT_SECRET;
+const SEATGEEK_CLIENT_ID = process.env.SEATGEEK_CLIENT_ID;
+const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
 const basic = Buffer.from(`${client_id}:${client_secret}`).toString("base64");
 const TOKEN_ENDPOINT = `https://accounts.spotify.com/api/token`;
@@ -27,6 +30,13 @@ const LASTFM_BASE_ENDPOINT =
   "https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=";
 const LASTFM_SUFFIX = "&format=json";
 
+const SEATGEEK_EVENTS_BASE =
+  "https://api.seatgeek.com/2/events?client_id=MYCLIENTID&client_secret=MYCLIENTSECRET";
+
+const OPENWEATHER_GEOLOCATION_BASE =
+  "http://api.openweathermap.org/geo/1.0/direct?q=";
+const OPENWEATHER_SUFFIX = "&appid=" + OPENWEATHER_API_KEY;
+
 const getAccessToken = async () => {
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
@@ -40,6 +50,36 @@ const getAccessToken = async () => {
     }),
   });
   return response.json();
+};
+
+export const getGeolocationResponse = async (city) => {
+  const GET_GEOLOCATION_ENDPOINT =
+    OPENWEATHER_GEOLOCATION_BASE + city + OPENWEATHER_SUFFIX;
+  return fetch(GET_GEOLOCATION_ENDPOINT);
+};
+
+export const getGeolocation = async (username, city, radius) => {
+  const geolocationJSON = await getGeolocationResponse(city);
+  const lat = geolocationJSON.lat;
+  const lon = geolocationJSON.lon;
+  User.updateOne(
+    { username: username },
+    {
+      $set: {
+        city: city,
+        lat: lat,
+        lon: lon,
+        radius: radius,
+      },
+    },
+    function (err, foundUser) {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("updated");
+      }
+    }
+  );
 };
 
 export const getTopArtists = async (time_range, limit) => {
@@ -88,6 +128,8 @@ export const getEvents = async (id, city, radius) => {
   }
   return eventsArr;
 };
+
+export const seatgeekEventsResponse = (city, radius, artistName) => {};
 
 const getPrettyPrinted = (jsonObj) => {
   var jsonEventPretty = JSON.stringify(jsonObj, null, 2);
