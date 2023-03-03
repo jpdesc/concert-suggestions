@@ -9,6 +9,7 @@ import {
   updateEvents,
   populateArtistArray,
   getGeolocation,
+  delay,
 } from "./helpers.js";
 
 import { app } from "./models.js";
@@ -17,6 +18,7 @@ dotenv.config();
 
 app.get("/", async function (req, res) {
   //   console.log(req.body);
+  console.log(`req.user = ${req.user}`);
   if (req.user) {
     console.log(req.user);
     console.log("authenticated");
@@ -31,19 +33,21 @@ app.get("/", async function (req, res) {
         );
         if (foundUser.events.length === 0 || lastUpdateDelta > 5) {
           foundUser.events = [];
-
           foundUser.topArtists.forEach((artist) => {
-            setTimeout(updateEvents, 201, foundUser._id, artist.id); // setTimeout needed to prevent API rate violations.
+            delay();
+            updateEvents(foundUser._id, artist.id); // setTimeout needed to prevent API rate violations.
             artist.relatedArtists.forEach((relatedArtist) => {
-              setTimeout(updateEvents, 201, foundUser._id, relatedArtist.id);
+              delay();
+              updateEvents(foundUser._id, relatedArtist.id);
             });
           });
-          //   console.log(foundUser.events);
+          foundUser.lastUpdate = moment();
+          console.log(foundUser.events);
           foundUser.save();
-          res.render("index", {
-            events: foundUser.events,
-          });
         }
+        res.render("index", {
+          events: foundUser.events,
+        });
       } else {
         res.redirect("/login");
       }
@@ -80,6 +84,7 @@ app.get("/updateInfo", async function (req, res) {
     res.render("updateInfo", { user: req.user });
   } else {
     // console.log(req.user);
+    console.log("");
     res.redirect("/");
   }
 });

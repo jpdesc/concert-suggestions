@@ -30,8 +30,7 @@ const LASTFM_BASE_ENDPOINT =
   "https://ws.audioscrobbler.com/2.0/?method=artist.getsimilar&artist=";
 const LASTFM_SUFFIX = "&format=json";
 
-const SEATGEEK_EVENTS_BASE =
-  "https://api.seatgeek.com/2/events?client_id=MYCLIENTID&client_secret=MYCLIENTSECRET";
+const SEATGEEK_EVENTS_BASE = `https://api.seatgeek.com/2/events?client_id=${SEATGEEK_CLIENT_ID}&client_secret=${SEATGEEK_CLIENT_SECRET}`;
 
 const OPENWEATHER_GEOLOCATION_BASE =
   "http://api.openweathermap.org/geo/1.0/direct?q=";
@@ -131,7 +130,9 @@ export const getEvents = async (id, city, radius) => {
   return eventsArr;
 };
 
-export const seatgeekEventsResponse = (city, radius, artistName) => {};
+// export const seatgeekEventsResponse = (lat, lon, artistName) => {
+//   const artistURL = `&performers.slug=${artistName}`;
+// };
 
 const getPrettyPrinted = (jsonObj) => {
   var jsonEventPretty = JSON.stringify(jsonObj, null, 2);
@@ -150,6 +151,7 @@ export const updateEvents = async (userId, artistId) => {
   var events = await getEvents(artistId, "Los Angeles", 50);
   //   console.log(events);
   events.forEach((event) => {
+    delay();
     var eventObj = new Event({
       title: event.name,
       date: event.dates.start.localDate,
@@ -161,6 +163,10 @@ export const updateEvents = async (userId, artistId) => {
     foundUser.events.push(eventObj);
   });
   foundUser.save();
+};
+
+export const delay = () => {
+  setTimeout(() => {}, 200);
 };
 
 const attractionResponse = (artist) => {
