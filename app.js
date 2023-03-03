@@ -88,7 +88,6 @@ app.post("/updateInfo", async function (req, res) {
   const city = req.body.city;
   const radius = req.body.radius;
   getGeolocation(req.user.username, city, radius);
-
   res.redirect("/");
 });
 

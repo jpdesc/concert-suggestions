@@ -59,9 +59,11 @@ export const getGeolocationResponse = async (city) => {
 };
 
 export const getGeolocation = async (username, city, radius) => {
-  const geolocationJSON = await getGeolocationResponse(city);
-  const lat = geolocationJSON.lat;
-  const lon = geolocationJSON.lon;
+  const geolocationResponse = await getGeolocationResponse(city);
+  const geolocationJSON = await geolocationResponse.json();
+  console.log(geolocationJSON);
+  const lat = geolocationJSON[0].lat;
+  const lon = geolocationJSON[0].lon;
   User.updateOne(
     { username: username },
     {
