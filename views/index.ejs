@@ -1,5 +1,6 @@
 
   <%- include("partials/header") -%>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
 
 <div id="header">
 <h4>Recommended Events</h4>
@@ -7,51 +8,53 @@
 
 <div class="container" id="events">
     <hr>
-    <% events.forEach(event => { %>
-    <% if (event) { %>
-        <div><%=event.title %></div>
-   <% } %>
+   <% if (events.length > 0) { %>
+        <div id="carouselExampleControls" class="carousel" data-bs-ride="false">
+            <div class="carousel-inner">
 
-<%})%>
+
+        <% events.forEach(event => { %>
+            <% if (event) { %>
+                 <% if (events[0] === event) { %>
+                    <div class="carousel-item active">
+              <%  } else { %>
+                    <div class="carousel-item">
+               <% } %>
+            <div class="card">
+                <div class="img-wrapper"><img src="" class="d-block w-100" alt=""> </div>
+                    <div class="card-body">
+                    <h5 class="card-title"><%=event.title %></h5>
+                        <p class="card-text"><%=event.date %></p>
+                        <p class="card-text"><%=event.time %></p>
+                    <a href="<%=event.tickets%>" class="btn btn-primary">Buy Tickets</a>
+                    </div>
+                </div>
+                </div>
+            <% } %>
+        <%})%>
+
+                </div>
+            </div>
+            <a class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" type="button" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+            </a>
+  <a class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" type="button" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </a>
+    <% } %>
+
+ </div>
 </div>
 
-
-<% /* %>
- <% for (let i=0; i < recommendedEvents.length; i++) { %>
-      <% if (recommendedEvents.length > 0) { %>
-    <span><%=recommendedEvents[i].artist%></span>
-       <% } %>
-<%}%>
-
- <% for (let i = 0; i < Object.keys(topArtists).length; i++){%>
-  <p><%= topArtists[i].artist %></p>
-  <% if (topArtists[i].image) {%>
-  <img src=<%=topArtists[i].image %> >
-  <%} %> <br>
-
-  <% } %> <%*/%>
-
-
 <div id="settings">
-
-  <div class="container">
-<form class="spotify-queries" action="/" method="post">
-    <!-- <label for="quantity">Number of Artists: </label>
-    <input
-        id="quantity"
-      type="number"
-      name="quantity"
-      min="1"
-      max="50"
-      autocomplete="off"
-    /> -->
-     <!-- <label for="range">Time Range: </label>
-    <select name="range" id="range">
-     <option value="short_term">Short Term</option>
-     <option value="medium_term">Medium Term</option>
-     <option value="long_term">Long Term</option>
-    </select><br> -->
 <hr>
+  <div class="container">
+
+<form class="spotify-queries" action="/" method="post">
+
+
 <div class="form-items">
     <span class="form-left">
         <label for="location">City Name: </label>
@@ -88,4 +91,41 @@
 </div>
 
   <hr>
+
+  <script>
+     $(document).ready(function() {
+    var multipleCardCarousel = document.querySelector(
+  "#carouselExampleControls"
+);
+if (window.matchMedia("(min-width: 768px)").matches) {
+  var carousel = new bootstrap.Carousel(multipleCardCarousel, {
+    interval: false,
+  });
+  var carouselWidth = $(".carousel-inner")[0].scrollWidth;
+  var cardWidth = $(".carousel-item").width();
+  var scrollPosition = 0;
+  $("#carouselExampleControls .carousel-control-next").on("click", function () {
+    if (scrollPosition < carouselWidth - cardWidth * 4) {
+      scrollPosition += cardWidth;
+      $("#carouselExampleControls .carousel-inner").animate(
+        { scrollLeft: scrollPosition },
+        600
+      );
+    }
+  });
+  $("#carouselExampleControls .carousel-control-prev").on("click", function () {
+    if (scrollPosition > 0) {
+      scrollPosition -= cardWidth;
+      $("#carouselExampleControls .carousel-inner").animate(
+        { scrollLeft: scrollPosition },
+        600
+      );
+    }
+  });
+} else {
+  $(multipleCardCarousel).addClass("slide");
+}
+     });
+
+  </script>
   <%- include("partials/footer") -%>
