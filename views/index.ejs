@@ -5,48 +5,55 @@
 <div id="header">
 <h4>Recommended Events</h4>
 </div>
+<hr>
 
-<div class="container" id="events">
-    <hr>
+
    <% if (events.length > 0) { %>
+        <div class="container-fluid text-center my-3" id="events">
+        <div class="row justify-content-center centered row-container">
         <div id="carouselExampleControls" class="carousel" data-bs-ride="false">
             <div class="carousel-inner">
 
 
         <% events.forEach(event => { %>
             <% if (event) { %>
+
                  <% if (events[0] === event) { %>
                     <div class="carousel-item active">
               <%  } else { %>
                     <div class="carousel-item">
                <% } %>
+                        <div class="col-4 centered">
             <div class="card">
                 <div class="img-wrapper"><img src="" class="d-block w-100" alt=""> </div>
                     <div class="card-body">
-                    <h5 class="card-title"><%=event.title %></h5>
+                    <h5 class="card-title-custom"><%=event.title %></h5>
                         <p class="card-text"><%=event.date %></p>
                         <p class="card-text"><%=event.time %></p>
                     <a href="<%=event.tickets%>" class="btn btn-primary">Buy Tickets</a>
                     </div>
                 </div>
                 </div>
+        </div>
+
             <% } %>
         <%})%>
 
-                </div>
+        </div>
             </div>
-            <a class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" type="button" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
+           <a class="carousel-control-prev bg-transparent w-aut" href="#carouselExampleControls" role="button" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             </a>
-  <a class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" type="button" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </a>
+            <a class="carousel-control-next bg-transparent w-aut" href="#carouselExampleControls" role="button" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </a>
+   </div>
+ </div>
+ </div>
     <% } %>
 
- </div>
-</div>
+
+
 
 <!-- <div id="settings">
 <hr>
@@ -92,7 +99,26 @@
 
   <hr>
 
-  <script>
+<script>
+
+
+let items = document.querySelectorAll('.carousel .carousel-item')
+
+items.forEach((el) => {
+    const minPerSlide = 3
+    let next = el.nextElementSibling
+    for (var i=1; i<minPerSlide; i++) {
+        if (!next) {
+            // wrap carousel by using first child
+        	next = items[0]
+      	}
+        let cloneChild = next.cloneNode(true)
+        el.appendChild(cloneChild.children[0])
+        next = next.nextElementSibling
+    }
+})
+</script>
+  <!-- <script>
      $(document).ready(function() {
     var multipleCardCarousel = document.querySelector(
   "#carouselExampleControls"
@@ -127,5 +153,5 @@ if (window.matchMedia("(min-width: 768px)").matches) {
 }
      });
 
-  </script>
+  </script> -->
   <%- include("partials/footer") -%>
