@@ -141,7 +141,6 @@ const getPrettyPrinted = (jsonObj) => {
 
 const getUser = async (userId) => {
   const foundUser = await User.findOne({ _id: userId });
-  //   console.log(foundUser);
   return foundUser;
 };
 
@@ -159,7 +158,10 @@ export const updateEvents = async (userId, artistId) => {
       time: event.dates.start.localTime,
       venue: event._embedded,
       location: event._embedded,
+      image: event.images[0].url,
+      genre: event.classifications[0].genre.name,
     });
+
     foundUser.events.push(eventObj);
   });
   foundUser.save();

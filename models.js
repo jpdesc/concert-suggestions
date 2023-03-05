@@ -23,6 +23,8 @@ const eventSchema = new mongoose.Schema({
   time: String,
   venue: String,
   location: String,
+  image: String,
+  genre: String,
 });
 
 const relatedArtistSchema = new mongoose.Schema({

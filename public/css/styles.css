@@ -12,6 +12,7 @@
 #events {
   margin: auto;
   padding: 0% 10%;
+  padding-top: 25px;
 }
 
 img {
@@ -43,6 +44,7 @@ form {
 .btn {
   margin-top: 10px;
   margin-bottom: 10px;
+  font-size: small;
 }
 
 .centered {
