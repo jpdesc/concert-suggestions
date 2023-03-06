@@ -146,58 +146,56 @@ const getPrettyPrinted = (jsonObj) => {
   return jsonEventPretty;
 };
 
-export const getUser = async (userId) => {
-  const foundUser = await User.findOne({ _id: userId });
+export const getUser = (userId) => {
+  const foundUser = User.findOne({ _id: userId });
   return foundUser;
 };
 
-export const updateEvents = async (userId, artistId) => {
-  const user = await getUser(userId);
-  const events = await getEvents(artistId, user.city, user.radius);
-  events.forEach(async (event) => {
-    delay();
-    console.log(event.name);
-    const eventObj = new Event({
-      title: event.name,
-      date: event.dates.start.localDate,
-      tickets: event.url,
-      time: event.dates.start.localTime,
-      venue: event._embedded,
-      location: event._embedded,
-      image: event.images[0].url,
-      genre: event.classifications[0].genre.name,
+export const updateEvents = (userId, artistId) => {
+  User.findOne({ _id: userId }, async function (err, foundUser) {
+    const events = await getEvents(artistId, foundUser.city, foundUser.radius);
+    events.forEach((event) => {
+      delay();
+      console.log(event.name);
+      const eventObj = new Event({
+        title: event.name,
+        date: event.dates.start.localDate,
+        tickets: event.url,
+        time: event.dates.start.localTime,
+        venue: event._embedded,
+        location: event._embedded,
+        image: event.images[0].url,
+        genre: event.classifications[0].genre.name,
+      });
+      foundUser.updateOne({ $push: { events: eventObj } });
     });
-    await user.updateOne({ $push: { events: eventObj } });
+    if (foundUser.events.length > 1) {
+      console.log(foundUser.events.length);
+    }
   });
-  if (user.events.length > 1) {
-    console.log(user.events.length);
-  }
   //   console.log(user.events);
 };
 
-export const delay = () => {
-  setTimeout(() => {}, 200);
+export const delay = async () => {
+  await setTimeout(() => {}, 200);
 };
 
-export const getUserEvents = async (userId, eventRefresh) => {
-  const user = await getUser(userId);
-  if (user.events.length === 0 || eventRefresh) {
-    console.log("updating events");
-    await user.updateOne({ $set: { events: [] } });
-    user.topArtists.forEach(async (artist) => {
-      await delay();
-      await updateEvents(user._id, artist.id); // setTimeout needed to prevent API rate violations.
-      artist.relatedArtists.forEach(async (relatedArtist) => {
+export const getUserEvents = (userId, eventRefresh) => {
+  User.findOne({ _id: userId }, function (err, user) {
+    if (user.events.length === 0 || eventRefresh) {
+      console.log("updating events");
+      user.updateOne({ $set: { events: [] } });
+      user.topArtists.forEach(async (artist) => {
         await delay();
-        await updateEvents(user._id, relatedArtist.id);
+        await updateEvents(user._id, artist.id); // setTimeout needed to prevent API rate violations.
+        artist.relatedArtists.forEach(async (relatedArtist) => {
+          await delay();
+          await updateEvents(user._id, relatedArtist.id);
+        });
       });
-    });
-    await user.updateOne({ $set: { nextUpdate: dayjs().add(5, "day") } });
-  }
-  console.log(user.city);
-  console.log(user.radius);
-  console.log(user);
-  return user.events;
+      user.updateOne({ $set: { nextUpdate: dayjs().add(5, "day") } });
+    }
+  });
 };
 
 const attractionResponse = (artist) => {

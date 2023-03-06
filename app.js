@@ -32,10 +32,11 @@ app.get("/", async function (req, res) {
             await populateArtistArray(foundUser._id);
           }
           var eventRefresh = await dayjs().isAfter(foundUser.nextUpdate);
-          const events = await getUserEvents(foundUser._id, eventRefresh);
-          console.log(events);
-          res.render("index", {
-            events: events,
+          await getUserEvents(foundUser._id, eventRefresh);
+          User.findOne({ username: req.user.username }, function (err, user) {
+            res.render("index", {
+              events: user.events,
+            });
           });
         } else {
           console.log("redirecting to login");
