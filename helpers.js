@@ -1,5 +1,6 @@
 import * as dotenv from "dotenv";
 import { User, Artist, Recommended, Event } from "./models.js";
+import dayjs from "dayjs";
 
 dotenv.config();
 import querystring from "querystring";
@@ -119,14 +120,20 @@ export const eventsResponse = (id, city, radius) => {
 };
 
 export const getEvents = async (id, city, radius) => {
+  console.log(id, city, radius);
   let response = await eventsResponse(id, city, radius);
   let eventsJSON = await response.json();
+  console.log(eventsJSON);
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
   for (let i = 0; i < max; i++) {
     eventsArr.push(parsedEvents.events[i]);
   }
+  if (eventsArr.length > 0) {
+    console.log(eventsArr);
+  }
+
   return eventsArr;
 };
 
@@ -139,19 +146,18 @@ const getPrettyPrinted = (jsonObj) => {
   return jsonEventPretty;
 };
 
-const getUser = async (userId) => {
+export const getUser = async (userId) => {
   const foundUser = await User.findOne({ _id: userId });
   return foundUser;
 };
 
 export const updateEvents = async (userId, artistId) => {
-  var foundUser = await getUser(userId);
-  //   console.log(foundUser);
-  var events = await getEvents(artistId, "Los Angeles", 50);
-  //   console.log(events);
-  events.forEach((event) => {
+  const user = await getUser(userId);
+  const events = await getEvents(artistId, user.city, user.radius);
+  events.forEach(async (event) => {
     delay();
-    var eventObj = new Event({
+    console.log(event.name);
+    const eventObj = new Event({
       title: event.name,
       date: event.dates.start.localDate,
       tickets: event.url,
@@ -161,14 +167,37 @@ export const updateEvents = async (userId, artistId) => {
       image: event.images[0].url,
       genre: event.classifications[0].genre.name,
     });
-
-    foundUser.events.push(eventObj);
+    await user.updateOne({ $push: { events: eventObj } });
   });
-  foundUser.save();
+  if (user.events.length > 1) {
+    console.log(user.events.length);
+  }
+  //   console.log(user.events);
 };
 
 export const delay = () => {
   setTimeout(() => {}, 200);
+};
+
+export const getUserEvents = async (userId, eventRefresh) => {
+  const user = await getUser(userId);
+  if (user.events.length === 0 || eventRefresh) {
+    console.log("updating events");
+    await user.updateOne({ $set: { events: [] } });
+    user.topArtists.forEach(async (artist) => {
+      await delay();
+      await updateEvents(user._id, artist.id); // setTimeout needed to prevent API rate violations.
+      artist.relatedArtists.forEach(async (relatedArtist) => {
+        await delay();
+        await updateEvents(user._id, relatedArtist.id);
+      });
+    });
+    await user.updateOne({ $set: { nextUpdate: dayjs().add(5, "day") } });
+  }
+  console.log(user.city);
+  console.log(user.radius);
+  console.log(user);
+  return user.events;
 };
 
 const attractionResponse = (artist) => {
@@ -227,7 +256,8 @@ export const getRecommended = async (artistName) => {
   return related;
 };
 
-export const populateArtistArray = async (user) => {
+export const populateArtistArray = async (userId) => {
+  const user = await getUser(userId);
   const response = await getTopArtists("long_term", 50);
   const { items } = await response.json();
   for (let i in items) {

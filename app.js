@@ -1,7 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import moment from "moment";
-
+import dayjs from "dayjs";
 import passport from "passport";
 import * as dotenv from "dotenv";
 import { User, Artist, Recommended, Event } from "./models.js";
@@ -10,6 +9,8 @@ import {
   populateArtistArray,
   getGeolocation,
   delay,
+  getUserEvents,
+  getUser,
 } from "./helpers.js";
 
 import { app } from "./models.js";
@@ -22,50 +23,32 @@ app.get("/", async function (req, res) {
   if (req.user) {
     console.log(req.user);
     console.log("authenticated");
-    User.findOne({ username: req.user.username }, function (err, foundUser) {
-      if (foundUser) {
-        if (foundUser.topArtists.length === 0) {
-          populateArtistArray(foundUser);
-        }
-        var lastUpdateDelta = moment().diff(
-          moment(foundUser.lastUpdate),
-          "days"
-        );
-        if (foundUser.events.length === 0 || lastUpdateDelta > 5) {
-          foundUser.events = [];
-          foundUser.topArtists.forEach((artist) => {
-            delay();
-            updateEvents(foundUser._id, artist.id); // setTimeout needed to prevent API rate violations.
-            artist.relatedArtists.forEach((relatedArtist) => {
-              delay();
-              updateEvents(foundUser._id, relatedArtist.id);
-            });
+    User.findOne(
+      { username: req.user.username },
+      async function (err, foundUser) {
+        if (foundUser) {
+          console.log(`found a user: ${foundUser}`);
+          if (foundUser.topArtists.length === 0) {
+            await populateArtistArray(foundUser._id);
+          }
+          var eventRefresh = await dayjs().isAfter(foundUser.nextUpdate);
+          const events = await getUserEvents(foundUser._id, eventRefresh);
+          console.log(events);
+          res.render("index", {
+            events: events,
           });
-          foundUser.lastUpdate = moment();
-          console.log(foundUser.events);
-          foundUser.save();
+        } else {
+          console.log("redirecting to login");
+          res.redirect("/login");
         }
-        res.render("index", {
-          events: foundUser.events,
-        });
-      } else {
-        res.redirect("/login");
       }
-    });
+    );
   } else {
     res.redirect("/login");
   }
 });
 
-app.post("/", async function (req, res) {
-  const updatedRadius = req.body.radius;
-  const updatedCity = req.body.city;
-  req.user.getGeolocation(req.user, updatedCity);
-  User.findOne({ username: req.body.username }, function (err, foundUser) {
-    console.log(foundUser);
-  });
-  res.redirect("/");
-});
+app.get("/analysis", async function (req, res) {});
 
 app.get("/customize", async function (req, res) {
   User.findOne({ username: "jpdesc" }, function (err, foundUser) {
