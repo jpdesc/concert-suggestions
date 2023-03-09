@@ -21,29 +21,22 @@ app.get("/", async function (req, res) {
   //   console.log(req.body);
   console.log(`req.user = ${req.user}`);
   if (req.user) {
-    console.log(req.user);
+    const username = req.user.username;
+    console.log(req.user._id);
     console.log("authenticated");
-    User.findOne(
-      { username: req.user.username },
-      async function (err, foundUser) {
-        if (foundUser) {
-          console.log(`found a user: ${foundUser}`);
-          if (foundUser.topArtists.length === 0) {
-            await populateArtistArray(foundUser._id);
-          }
-          var eventRefresh = await dayjs().isAfter(foundUser.nextUpdate);
-          await getUserEvents(foundUser._id, eventRefresh);
-          User.findOne({ username: req.user.username }, function (err, user) {
-            res.render("index", {
-              events: user.events,
-            });
-          });
-        } else {
-          console.log("redirecting to login");
-          res.redirect("/login");
-        }
+    User.findOne({ username: username }, async function (err, foundUser) {
+      //   console.log(`found a user: ${foundUser}`);
+      if (foundUser.topArtists.length === 0) {
+        await populateArtistArray(foundUser);
       }
-    );
+    });
+
+    var eventRefresh = await dayjs().isAfter(foundUser.nextUpdate);
+    const updatedUser = await getUserEvents(user._id, eventRefresh);
+    console.log(updatedUser);
+    res.render("index", {
+      events: updatedUser.events,
+    });
   } else {
     res.redirect("/login");
   }
