@@ -176,18 +176,15 @@ export const getUserEvents = async (userId, eventRefresh) => {
     console.log("updating events");
     user.nextUpdate = await dayjs().add(5, "day");
     user.events = [];
-    await user.save();
-    user.topArtists.forEach(async (artist) => {
-      await delay();
-      await updateEvents(user._id, artist.id); // setTimeout needed to prevent API rate violations.
-      artist.relatedArtists.forEach(async (relatedArtist) => {
-        await delay();
-        await updateEvents(user._id, relatedArtist.id);
+    user.topArtists.forEach((artist) => {
+      setTimeout(updateEvents, 201, user._id, artist.id); // setTimeout needed to prevent API rate violations.
+      artist.relatedArtists.forEach((relatedArtist) => {
+        setTimeout(updateEvents, 201, user._id, relatedArtist.id);
       });
     });
     await user.save();
-    return user;
   }
+  return user;
 };
 
 const attractionResponse = (artist) => {
@@ -269,4 +266,5 @@ export const populateArtistArray = async (user) => {
     // User.updateOne({ _id: user._id }, { $push: { topArtists: artist } });
   }
   await user.save();
+  return user;
 };
