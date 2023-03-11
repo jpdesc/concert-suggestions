@@ -27,17 +27,17 @@ app.get("/", async function (req, res) {
     User.findOne({ username: username })
       .then(async (user) => {
         if (user.topArtists.length === 0) {
-          return populateArtistArray(user);
+          return await populateArtistArray(user);
         }
         return user;
       })
       .then(async (user) => {
-        console.log(`inside middle promise ${user}`);
+        // console.log(`inside middle promise ${user}`);
         var eventRefresh = await dayjs().isAfter(user.nextUpdate);
         return await getUserEvents(user._id, eventRefresh);
       })
       .then((user) => {
-        console.log(`last then user: ${user}`);
+        // console.log(`last then user: ${user}`);
         res.render("index", {
           events: user.events,
         });

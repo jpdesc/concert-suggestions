@@ -1,9 +1,15 @@
 import * as dotenv from "dotenv";
 import { User, Artist, Recommended, Event } from "./models.js";
 import dayjs from "dayjs";
+import Bottleneck from "bottleneck";
 dotenv.config();
 import querystring from "querystring";
 // import topArtistsArray from "app.js";
+
+const limiter = new Bottleneck({
+  maxConcurrent: 1,
+  minTime: 200,
+});
 
 const client_id = process.env.CLIENT_ID;
 const client_secret = process.env.CLIENT_SECRET;
@@ -50,6 +56,11 @@ const getAccessToken = async () => {
   });
   return response.json();
 };
+
+const setTimeoutPromise = (timeout) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
 
 export const getGeolocationResponse = async (city) => {
   const GET_GEOLOCATION_ENDPOINT =
@@ -108,7 +119,7 @@ export const getTopArtistsArray = (topArtistsObj) => {
   return topArtistsArray;
 };
 
-export const eventsResponse = (id, city, radius) => {
+export const eventsResponse = async (id, city, radius) => {
   if (radius === "None") {
     var radius = 50;
   }
@@ -120,13 +131,14 @@ export const eventsResponse = (id, city, radius) => {
 
 export const getEvents = async (id, city, radius) => {
   let response = await eventsResponse(id, city, radius);
+  console.log(response);
   let eventsJSON = await response.json();
   console.log(eventsJSON);
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
   for (let i = 0; i < max; i++) {
-    eventsArr.push(parsedEvents.events[i]);
+    await eventsArr.push(parsedEvents.events[i]);
   }
   return eventsArr;
 };
@@ -145,29 +157,33 @@ export const getUser = async (userId) => {
   return foundUser;
 };
 
-export const updateEvents = async (userId, artistId) => {
+export const updateEvents = async (userId, artistId, type) => {
+  console.log(type);
   const user = await getUser(userId);
-  const events = await getEvents(artistId, user.city, user.radius);
-  events.forEach(async (event) => {
-    await delay();
-    console.log(event.name);
-    const eventObj = new Event({
-      title: event.name,
-      date: event.dates.start.localDate,
-      tickets: event.url,
-      time: event.dates.start.localTime,
-      venue: event._embedded,
-      location: event._embedded,
-      image: event.images[0].url,
-      genre: event.classifications[0].genre.name,
+  await limiter
+    .schedule(() => getEvents(artistId, user.city, user.radius))
+    .then((events) => {
+      events.forEach(async (event) => {
+        // console.log(event.name);
+        const eventObj = new Event({
+          title: event.name,
+          date: event.dates.start.localDate,
+          tickets: event.url,
+          time: event.dates.start.localTime,
+          venue: event._embedded,
+          location: event._embedded,
+          image: event.images[0].url,
+          genre: event.classifications[0].genre.name,
+        });
+        await user.events.push(eventObj);
+      });
     });
-    user.events.push(eventObj);
-  });
+
   await user.save();
 };
 
 export const delay = async () => {
-  await setTimeout(() => {}, 200);
+  return await setTimeout(() => {}, 200);
 };
 
 export const getUserEvents = async (userId, eventRefresh) => {
@@ -176,10 +192,10 @@ export const getUserEvents = async (userId, eventRefresh) => {
     console.log("updating events");
     user.nextUpdate = await dayjs().add(5, "day");
     user.events = [];
-    user.topArtists.forEach((artist) => {
-      setTimeout(updateEvents, 201, user._id, artist.id); // setTimeout needed to prevent API rate violations.
-      artist.relatedArtists.forEach((relatedArtist) => {
-        setTimeout(updateEvents, 201, user._id, relatedArtist.id);
+    await user.topArtists.forEach(async (artist) => {
+      await updateEvents(user._id, artist.id, "top artists"); // setTimeout needed to prevent API rate violations.
+      await artist.relatedArtists.forEach(async (relatedArtist) => {
+        await updateEvents(user._id, relatedArtist.id, "related");
       });
     });
     await user.save();
@@ -251,16 +267,16 @@ export const populateArtistArray = async (user) => {
     const artistName = artistObj["name"];
     var artist = new Artist({
       artist: artistName,
-      id: await setTimeout(getArtistID, 201, artistName),
+      id: await getArtistID(artistName),
       image: artistObj.images[0].url,
     });
     console.log(artist);
     // console.log(artist.id);
     let relatedArtists = await getRecommended(artistName);
-    relatedArtists.forEach((relatedArtist) => {
-      artist.relatedArtists.push(relatedArtist);
+    relatedArtists.forEach(async (relatedArtist) => {
+      await artist.relatedArtists.push(relatedArtist);
     });
-    user.topArtists.push(artist);
+    await user.topArtists.push(artist);
     // console.log(user.topArtists);
 
     // User.updateOne({ _id: user._id }, { $push: { topArtists: artist } });
