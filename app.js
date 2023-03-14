@@ -18,7 +18,19 @@ import { app } from "./models.js";
 dotenv.config();
 
 app.get("/", async function (req, res) {
-  //   console.log(req.body);
+  if (!req.user) {
+    res.redirect("/login");
+  } else {
+    User.findOne({ username: req.user.username }).then((user) => {
+      console.log(user.events);
+      if (user.events.length > 0) {
+        res.render("index", { events: user.events });
+      }
+    });
+  }
+});
+
+app.get("/analyze", async function (req, res) {
   console.log(`req.user = ${req.user}`);
   if (req.user) {
     const username = req.user.username;
@@ -36,20 +48,17 @@ app.get("/", async function (req, res) {
         var eventRefresh = await dayjs().isAfter(user.nextUpdate);
         return await getUserEvents(user._id, eventRefresh);
       })
-      .then((user) => {
-        // console.log(`last then user: ${user}`);
-        res.render("index", {
-          events: user.events,
-        });
+      .then(async (user) => {
+        await user;
+        res.redirect("/");
       });
   } else {
     res.redirect("/login");
   }
 });
 
-app.get("/analysis", async function (req, res) {});
-
 app.get("/customize", async function (req, res) {
+  res.render("analyze");
   User.findOne({ username: "jpdesc" }, function (err, foundUser) {
     if (!err) {
       res.render("customize", { artists: foundUser.topArtists });
@@ -67,7 +76,7 @@ app.get("/updateInfo", async function (req, res) {
   } else {
     // console.log(req.user);
     console.log("");
-    res.redirect("/");
+    res.redirect("/analyze");
   }
 });
 
@@ -75,7 +84,7 @@ app.post("/updateInfo", async function (req, res) {
   const city = req.body.city;
   const radius = req.body.radius;
   getGeolocation(req.user.username, city, radius);
-  res.redirect("/");
+  res.redirect("/analyze");
 });
 
 app.post("/customize", async function (req, res) {

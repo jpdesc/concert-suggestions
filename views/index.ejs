@@ -25,9 +25,10 @@
                <% } %>
                         <div class="col-4 centered">
             <div class="card">
-                <div class="img-wrapper"><img src="" class="d-block w-100" alt=""> </div>
+                <div class="img-wrapper"><img src=<%=event.image%> class="d-block w-100 img-wrapper" alt=""> </div>
                     <div class="card-body">
                     <h5 class="card-title-custom"><%=event.title %></h5>
+                        <p class="card-text"><%=event.venue%></p>
                         <p class="card-text"><%=event.date %></p>
                         <p class="card-text"><%=event.time %></p>
                     <a href="<%=event.tickets%>" class="btn btn-secondary">Tickets</a>

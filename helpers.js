@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 import Bottleneck from "bottleneck";
 dotenv.config();
 import querystring from "querystring";
-// import topArtistsArray from "app.js";
 
 const limiter = new Bottleneck({
   maxConcurrent: 1,
@@ -157,6 +156,17 @@ export const getUser = async (userId) => {
   return foundUser;
 };
 
+const convertDate = async (date) => {
+  const formattedDate = await dayjs(date).format("dddd, MMMM D, YYYY");
+  return formattedDate;
+};
+
+const convertTime = async (date, time) => {
+  const dateTime = date + time;
+  const formattedTime = await dayjs(dateTime).format("h:mm A");
+  return formattedTime;
+};
+
 export const updateEvents = async (userId, artistId, type) => {
   console.log(type);
   const user = await getUser(userId);
@@ -167,10 +177,13 @@ export const updateEvents = async (userId, artistId, type) => {
         // console.log(event.name);
         const eventObj = new Event({
           title: event.name,
-          date: event.dates.start.localDate,
+          date: await convertDate(event.dates.start.localDate),
           tickets: event.url,
-          time: event.dates.start.localTime,
-          venue: event._embedded,
+          time: await convertTime(
+            event.dates.start.localDate,
+            event.dates.start.localTime
+          ),
+          venue: event._embedded.venues[0].name,
           location: event._embedded,
           image: event.images[0].url,
           genre: event.classifications[0].genre.name,
