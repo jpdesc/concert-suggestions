@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import dayjs from "dayjs";
 import passport from "passport";
 import * as dotenv from "dotenv";
+
 import { User, Artist, Recommended, Event } from "./models.js";
 import {
   updateEvents,
@@ -23,9 +24,7 @@ app.get("/", async function (req, res) {
   } else {
     User.findOne({ username: req.user.username }).then((user) => {
       console.log(user.events);
-      if (user.events.length > 0) {
-        res.render("index", { events: user.events });
-      }
+      res.render("index", { events: user.events });
     });
   }
 });
@@ -39,17 +38,17 @@ app.get("/analyze", async function (req, res) {
     User.findOne({ username: username })
       .then(async (user) => {
         if (user.topArtists.length === 0) {
-          return await populateArtistArray(user);
+          const userUpdated = await populateArtistArray(user);
+          return userUpdated;
         }
         return user;
       })
       .then(async (user) => {
-        // console.log(`inside middle promise ${user}`);
-        var eventRefresh = await dayjs().isAfter(user.nextUpdate);
-        return await getUserEvents(user._id, eventRefresh);
-      })
-      .then(async (user) => {
         await user;
+        console.log(`inside middle promise ${user}`);
+        var eventRefresh = await dayjs().isAfter(user.nextUpdate);
+        await getUserEvents(user._id, eventRefresh);
+        console.log("redirecting to index now");
         res.redirect("/");
       });
   } else {
@@ -76,7 +75,7 @@ app.get("/updateInfo", async function (req, res) {
   } else {
     // console.log(req.user);
     console.log("");
-    res.redirect("/analyze");
+    res.render("analyze");
   }
 });
 
@@ -84,7 +83,7 @@ app.post("/updateInfo", async function (req, res) {
   const city = req.body.city;
   const radius = req.body.radius;
   getGeolocation(req.user.username, city, radius);
-  res.redirect("/analyze");
+  res.render("/analyze");
 });
 
 app.post("/customize", async function (req, res) {

@@ -70,7 +70,7 @@ export const getGeolocationResponse = async (city) => {
 export const getGeolocation = async (username, city, radius) => {
   const geolocationResponse = await getGeolocationResponse(city);
   const geolocationJSON = await geolocationResponse.json();
-  console.log(geolocationJSON);
+  //   console.log(geolocationJSON);
   const lat = geolocationJSON[0].lat;
   const lon = geolocationJSON[0].lon;
   User.updateOne(
@@ -130,9 +130,9 @@ export const eventsResponse = async (id, city, radius) => {
 
 export const getEvents = async (id, city, radius) => {
   let response = await eventsResponse(id, city, radius);
-  console.log(response);
+  //   console.log(response);
   let eventsJSON = await response.json();
-  console.log(eventsJSON);
+  //   console.log(eventsJSON);
   let parsedEvents = eventsJSON._embedded;
   let eventsArr = [];
   var max = parsedEvents ? parsedEvents.events.length : 0;
@@ -171,10 +171,11 @@ export const updateEvents = async (userId, artistId, type) => {
   console.log(type);
   const user = await getUser(userId);
   await limiter
-    .schedule(() => getEvents(artistId, user.city, user.radius))
+    .schedule(async () => await getEvents(artistId, user.city, user.radius))
     .then((events) => {
       events.forEach(async (event) => {
         // console.log(event.name);
+        console.log("new event creation.");
         const eventObj = new Event({
           title: event.name,
           date: await convertDate(event.dates.start.localDate),
@@ -205,14 +206,15 @@ export const getUserEvents = async (userId, eventRefresh) => {
     console.log("updating events");
     user.nextUpdate = await dayjs().add(5, "day");
     user.events = [];
-    await user.topArtists.forEach(async (artist) => {
+    for (const artist of user.topArtists) {
       await updateEvents(user._id, artist.id, "top artists"); // setTimeout needed to prevent API rate violations.
-      await artist.relatedArtists.forEach(async (relatedArtist) => {
+      for (const relatedArtist of artist.relatedArtists) {
         await updateEvents(user._id, relatedArtist.id, "related");
-      });
-    });
-    await user.save();
+      }
+    }
   }
+
+  await user.save();
   return user;
 };
 
@@ -286,10 +288,12 @@ export const populateArtistArray = async (user) => {
     console.log(artist);
     // console.log(artist.id);
     let relatedArtists = await getRecommended(artistName);
-    relatedArtists.forEach(async (relatedArtist) => {
-      await artist.relatedArtists.push(relatedArtist);
+    relatedArtists.forEach((relatedArtist) => {
+      //   console.log(artistName);
+      //   console.log(relatedArtist);
+      artist.relatedArtists.push(relatedArtist);
     });
-    await user.topArtists.push(artist);
+    user.topArtists.push(artist);
     // console.log(user.topArtists);
 
     // User.updateOne({ _id: user._id }, { $push: { topArtists: artist } });

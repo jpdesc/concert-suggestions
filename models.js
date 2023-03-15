@@ -6,6 +6,11 @@ import passport from "passport";
 import express from "express";
 import bodyParser from "body-parser";
 import session from "express-session";
+import { fileURLToPath } from "url";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
@@ -88,6 +93,7 @@ passport.use(
 
 const app = express();
 app.use(express.static("public"));
+app.set("views", __dirname + "/views");
 app.set("view engine", "ejs");
 app.use(
   bodyParser.urlencoded({
